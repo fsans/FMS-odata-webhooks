@@ -137,9 +137,12 @@ export function WebhookManager() {
                 <div className="flex items-start justify-between">
                   <div className="flex-1 space-y-2">
                     <div>
-                      <div className="font-medium text-sm">{webhook.webhook}</div>
+                      <div className="flex items-center gap-2">
+                        <div className="font-medium text-sm">{webhook.webhook}</div>
+                        <span className="text-xs bg-slate-100 px-2 py-1 rounded text-slate-600">ID: {webhook.id}</span>
+                      </div>
                       <div className="text-xs text-slate-500 mt-1">
-                        Table: {webhook.tableName}
+                        Database: {currentDatabase?.name} • Table: {webhook.tableName}
                         {webhook.select && ` • Fields: ${webhook.select}`}
                       </div>
                       {webhook.filter && (

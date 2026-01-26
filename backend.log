@@ -1,0 +1,578 @@
+
+> fms-odata-webhooks@0.0.1 backend
+> node backend-server.js
+
+
+🚀 FileMaker Backend Server running on http://localhost:3000
+
+API Endpoint: http://localhost:3000/api/filemaker/*
+
+Usage:
+  POST http://localhost:3000/api/filemaker/fmi/odata/v4/Contacts/Webhook.GetAll?host=192.168.0.24
+
+The backend will:
+  - Accept self-signed SSL certificates
+  - Handle CORS automatically
+  - Forward all requests to FileMaker Server
+
+Stop with Ctrl+C
+
+[2026-01-26T11:50:33.853Z] Request query params: { host: '192.168.0.24' }
+[2026-01-26T11:50:33.854Z] Filtered query string: 
+[2026-01-26T11:50:33.854Z] GET https://192.168.0.24/fmi/odata/v4
+[2026-01-26T11:50:33.917Z] Response status: 200
+[2026-01-26T11:50:33.917Z] Response headers: {
+  date: 'Mon, 26 Jan 2026 11:50:33 GMT',
+  server: 'Apache',
+  'odata-version': '4.01',
+  'content-type': 'application/json;charset=utf-8',
+  'content-length': '1693',
+  'x-frame-options': 'SAMEORIGIN',
+  'x-xss-protection': '1; mode=block',
+  'access-control-allow-origin': 'NBCN-SERVER-01.local',
+  'access-control-allow-headers': 'Content-Type, Authorization',
+  'access-control-allow-credentials': 'true',
+  'x-content-type-options': 'nosniff',
+  'keep-alive': 'timeout=5, max=100',
+  connection: 'Keep-Alive'
+}
+[2026-01-26T11:50:33.918Z] Response piped successfully
+[2026-01-26T11:50:33.926Z] Request query params: { host: '192.168.0.24' }
+[2026-01-26T11:50:33.926Z] Filtered query string: 
+[2026-01-26T11:50:33.926Z] GET https://192.168.0.24/fmi/odata/v4
+[2026-01-26T11:50:33.932Z] Response status: 200
+[2026-01-26T11:50:33.932Z] Response headers: {
+  date: 'Mon, 26 Jan 2026 11:50:33 GMT',
+  server: 'Apache',
+  'odata-version': '4.01',
+  'content-type': 'application/json;charset=utf-8',
+  'content-length': '1693',
+  'x-frame-options': 'SAMEORIGIN',
+  'x-xss-protection': '1; mode=block',
+  'access-control-allow-origin': 'NBCN-SERVER-01.local',
+  'access-control-allow-headers': 'Content-Type, Authorization',
+  'access-control-allow-credentials': 'true',
+  'x-content-type-options': 'nosniff',
+  'keep-alive': 'timeout=5, max=99',
+  connection: 'Keep-Alive'
+}
+[2026-01-26T11:50:33.933Z] Response piped successfully
+[2026-01-26T11:50:35.764Z] Request query params: { host: '192.168.0.24' }
+[2026-01-26T11:50:35.764Z] Filtered query string: 
+[2026-01-26T11:50:35.764Z] GET https://192.168.0.24/fmi/odata/v4/Contacts/$metadata
+[2026-01-26T11:50:35.775Z] Request query params: { host: '192.168.0.24' }
+[2026-01-26T11:50:35.775Z] Filtered query string: 
+[2026-01-26T11:50:35.775Z] GET https://192.168.0.24/fmi/odata/v4/Contacts/Webhook.GetAll
+[2026-01-26T11:50:35.790Z] Response status: 200
+[2026-01-26T11:50:35.790Z] Response headers: {
+  date: 'Mon, 26 Jan 2026 11:50:35 GMT',
+  server: 'Apache',
+  'odata-version': '4.01',
+  'content-type': 'application/json;charset=utf-8',
+  'content-length': '120',
+  'x-frame-options': 'SAMEORIGIN',
+  'x-xss-protection': '1; mode=block',
+  'access-control-allow-origin': 'NBCN-SERVER-01.local',
+  'access-control-allow-headers': 'Content-Type, Authorization',
+  'access-control-allow-credentials': 'true',
+  'x-content-type-options': 'nosniff',
+  'keep-alive': 'timeout=5, max=100',
+  connection: 'Keep-Alive'
+}
+[2026-01-26T11:50:35.791Z] Webhook response body: {"@context": "https://192.168.0.24/fmi/odata/v4/Contacts/$metadata#Webhook Processor","status": "ACTIVE","webhooks": []}
+[2026-01-26T11:50:35.791Z] Response piped successfully
+[2026-01-26T11:50:35.801Z] Response status: 200
+[2026-01-26T11:50:35.801Z] Response headers: {
+  date: 'Mon, 26 Jan 2026 11:50:35 GMT',
+  server: 'Apache',
+  'odata-version': '4.01',
+  'content-type': 'application/xml;charset=utf-8',
+  'content-length': '42399',
+  'x-frame-options': 'SAMEORIGIN',
+  'x-xss-protection': '1; mode=block',
+  'access-control-allow-origin': 'NBCN-SERVER-01.local',
+  'access-control-allow-headers': 'Content-Type, Authorization',
+  'access-control-allow-credentials': 'true',
+  'x-content-type-options': 'nosniff',
+  'keep-alive': 'timeout=5, max=98',
+  connection: 'Keep-Alive'
+}
+[2026-01-26T11:50:35.803Z] Response piped successfully
+[2026-01-26T11:50:39.029Z] Request query params: { host: '192.168.0.24' }
+[2026-01-26T11:50:39.030Z] Filtered query string: 
+[2026-01-26T11:50:39.030Z] GET https://192.168.0.24/fmi/odata/v4/Contacts/Webhook.GetAll
+[2026-01-26T11:50:39.033Z] Response status: 200
+[2026-01-26T11:50:39.033Z] Response headers: {
+  date: 'Mon, 26 Jan 2026 11:50:39 GMT',
+  server: 'Apache',
+  'odata-version': '4.01',
+  'content-type': 'application/json;charset=utf-8',
+  'content-length': '546',
+  'x-frame-options': 'SAMEORIGIN',
+  'x-xss-protection': '1; mode=block',
+  'access-control-allow-origin': 'NBCN-SERVER-01.local',
+  'access-control-allow-headers': 'Content-Type, Authorization',
+  'access-control-allow-credentials': 'true',
+  'x-content-type-options': 'nosniff',
+  'keep-alive': 'timeout=5, max=97',
+  connection: 'Keep-Alive'
+}
+[2026-01-26T11:50:39.034Z] Webhook response body: {"@context": "https://192.168.0.24/fmi/odata/v4/Contacts/$metadata#Webhook Processor","status": "ACTIVE","webhooks": [{"webhookID": 2,"tableName": "contact_","webhook": "http://localhost:8080/fm-contact-webhook.php","headers": {"API-KEY": "jlkdqlw44kjljñjñljkdx="},"notifySchemaChanges": false,"select": "first_name,last_name","filter": "","pendingOperations": []},{"webhookID": 3,"tableName": "contact","webhook": "http://localhost:8080/mywebhook","headers": {},"notifySchemaChanges": false,"select"
+[2026-01-26T11:50:39.034Z] Response piped successfully
+[2026-01-26T11:50:51.866Z] Request query params: { host: '192.168.0.24' }
+[2026-01-26T11:50:51.866Z] Filtered query string: 
+[2026-01-26T11:50:51.866Z] POST https://192.168.0.24/fmi/odata/v4/Contacts/Webhook.Delete(2)
+[2026-01-26T11:50:51.868Z] Request body: {}
+[2026-01-26T11:50:51.871Z] Response status: 200
+[2026-01-26T11:50:51.871Z] Response headers: {
+  date: 'Mon, 26 Jan 2026 11:50:51 GMT',
+  server: 'Apache',
+  'odata-version': '4.01',
+  'content-type': 'application/json;charset=utf-8',
+  'content-length': '34',
+  'x-frame-options': 'SAMEORIGIN',
+  'x-xss-protection': '1; mode=block',
+  'access-control-allow-origin': 'NBCN-SERVER-01.local',
+  'access-control-allow-headers': 'Content-Type, Authorization',
+  'access-control-allow-credentials': 'true',
+  'x-content-type-options': 'nosniff',
+  'keep-alive': 'timeout=5, max=100',
+  connection: 'Keep-Alive'
+}
+[2026-01-26T11:50:51.871Z] Webhook response body: {"webhookResult": {"webhookID":2}}
+[2026-01-26T11:50:51.871Z] Response piped successfully
+[2026-01-26T11:50:51.876Z] Request query params: { host: '192.168.0.24' }
+[2026-01-26T11:50:51.876Z] Filtered query string: 
+[2026-01-26T11:50:51.876Z] GET https://192.168.0.24/fmi/odata/v4/Contacts/Webhook.GetAll
+[2026-01-26T11:50:51.878Z] Response status: 200
+[2026-01-26T11:50:51.878Z] Response headers: {
+  date: 'Mon, 26 Jan 2026 11:50:51 GMT',
+  server: 'Apache',
+  'odata-version': '4.01',
+  'content-type': 'application/json;charset=utf-8',
+  'content-length': '546',
+  'x-frame-options': 'SAMEORIGIN',
+  'x-xss-protection': '1; mode=block',
+  'access-control-allow-origin': 'NBCN-SERVER-01.local',
+  'access-control-allow-headers': 'Content-Type, Authorization',
+  'access-control-allow-credentials': 'true',
+  'x-content-type-options': 'nosniff',
+  'keep-alive': 'timeout=5, max=99',
+  connection: 'Keep-Alive'
+}
+[2026-01-26T11:50:51.878Z] Webhook response body: {"@context": "https://192.168.0.24/fmi/odata/v4/Contacts/$metadata#Webhook Processor","status": "ACTIVE","webhooks": [{"webhookID": 2,"tableName": "contact_","webhook": "http://localhost:8080/fm-contact-webhook.php","headers": {"API-KEY": "jlkdqlw44kjljñjñljkdx="},"notifySchemaChanges": false,"select": "first_name,last_name","filter": "","pendingOperations": []},{"webhookID": 3,"tableName": "contact","webhook": "http://localhost:8080/mywebhook","headers": {},"notifySchemaChanges": false,"select"
+[2026-01-26T11:50:51.878Z] Response piped successfully
+[2026-01-26T11:50:53.833Z] Request query params: { host: '192.168.0.24' }
+[2026-01-26T11:50:53.833Z] Filtered query string: 
+[2026-01-26T11:50:53.833Z] GET https://192.168.0.24/fmi/odata/v4/Contacts/Webhook.GetAll
+[2026-01-26T11:50:53.836Z] Response status: 200
+[2026-01-26T11:50:53.836Z] Response headers: {
+  date: 'Mon, 26 Jan 2026 11:50:53 GMT',
+  server: 'Apache',
+  'odata-version': '4.01',
+  'content-type': 'application/json;charset=utf-8',
+  'content-length': '297',
+  'x-frame-options': 'SAMEORIGIN',
+  'x-xss-protection': '1; mode=block',
+  'access-control-allow-origin': 'NBCN-SERVER-01.local',
+  'access-control-allow-headers': 'Content-Type, Authorization',
+  'access-control-allow-credentials': 'true',
+  'x-content-type-options': 'nosniff',
+  'keep-alive': 'timeout=5, max=98',
+  connection: 'Keep-Alive'
+}
+[2026-01-26T11:50:53.836Z] Webhook response body: {"@context": "https://192.168.0.24/fmi/odata/v4/Contacts/$metadata#Webhook Processor","status": "ACTIVE","webhooks": [{"webhookID": 3,"tableName": "contact","webhook": "http://localhost:8080/mywebhook","headers": {},"notifySchemaChanges": false,"select": "","filter": "","pendingOperations": []}]}
+[2026-01-26T11:50:53.836Z] Response piped successfully
+[2026-01-26T11:51:00.377Z] Request query params: { host: '192.168.0.24' }
+[2026-01-26T11:51:00.377Z] Filtered query string: 
+[2026-01-26T11:51:00.377Z] GET https://192.168.0.24/fmi/odata/v4/Contacts/$metadata
+[2026-01-26T11:51:00.412Z] Response status: 200
+[2026-01-26T11:51:00.412Z] Response headers: {
+  date: 'Mon, 26 Jan 2026 11:51:00 GMT',
+  server: 'Apache',
+  'odata-version': '4.01',
+  'content-type': 'application/xml;charset=utf-8',
+  'content-length': '42399',
+  'x-frame-options': 'SAMEORIGIN',
+  'x-xss-protection': '1; mode=block',
+  'access-control-allow-origin': 'NBCN-SERVER-01.local',
+  'access-control-allow-headers': 'Content-Type, Authorization',
+  'access-control-allow-credentials': 'true',
+  'x-content-type-options': 'nosniff',
+  'keep-alive': 'timeout=5, max=100',
+  connection: 'Keep-Alive'
+}
+[2026-01-26T11:51:00.413Z] Response piped successfully
+[2026-01-26T11:52:53.603Z] Request query params: { host: '192.168.0.24' }
+[2026-01-26T11:52:53.603Z] Filtered query string: 
+[2026-01-26T11:52:53.603Z] POST https://192.168.0.24/fmi/odata/v4/Contacts/Webhook.Add
+[2026-01-26T11:52:53.605Z] Request body: {"webhook":"http://localhost:8080/mywebhook","tableName":"submission","select":"completed","filter":"completed eq 1","notifySchemaChanges":false,"headers":{"API-KEY":"1234567890ABCDEF"}}
+[2026-01-26T11:52:53.609Z] Response status: 200
+[2026-01-26T11:52:53.609Z] Response headers: {
+  date: 'Mon, 26 Jan 2026 11:52:53 GMT',
+  server: 'Apache',
+  'odata-version': '4.01',
+  'content-type': 'application/json;charset=utf-8',
+  'content-length': '34',
+  'x-frame-options': 'SAMEORIGIN',
+  'x-xss-protection': '1; mode=block',
+  'access-control-allow-origin': 'NBCN-SERVER-01.local',
+  'access-control-allow-headers': 'Content-Type, Authorization',
+  'access-control-allow-credentials': 'true',
+  'x-content-type-options': 'nosniff',
+  'keep-alive': 'timeout=5, max=100',
+  connection: 'Keep-Alive'
+}
+[2026-01-26T11:52:53.609Z] Webhook response body: {"webhookResult": {"webhookID":1}}
+[2026-01-26T11:52:53.609Z] Response piped successfully
+[2026-01-26T11:52:53.614Z] Request query params: { host: '192.168.0.24' }
+[2026-01-26T11:52:53.614Z] Filtered query string: 
+[2026-01-26T11:52:53.614Z] GET https://192.168.0.24/fmi/odata/v4/Contacts/Webhook.GetAll
+[2026-01-26T11:52:53.616Z] Response status: 200
+[2026-01-26T11:52:53.616Z] Response headers: {
+  date: 'Mon, 26 Jan 2026 11:52:53 GMT',
+  server: 'Apache',
+  'odata-version': '4.01',
+  'content-type': 'application/json;charset=utf-8',
+  'content-length': '530',
+  'x-frame-options': 'SAMEORIGIN',
+  'x-xss-protection': '1; mode=block',
+  'access-control-allow-origin': 'NBCN-SERVER-01.local',
+  'access-control-allow-headers': 'Content-Type, Authorization',
+  'access-control-allow-credentials': 'true',
+  'x-content-type-options': 'nosniff',
+  'keep-alive': 'timeout=5, max=99',
+  connection: 'Keep-Alive'
+}
+[2026-01-26T11:52:53.616Z] Webhook response body: {"@context": "https://192.168.0.24/fmi/odata/v4/Contacts/$metadata#Webhook Processor","status": "ACTIVE","webhooks": [{"webhookID": 3,"tableName": "contact","webhook": "http://localhost:8080/mywebhook","headers": {},"notifySchemaChanges": false,"select": "","filter": "","pendingOperations": []},{"webhookID": 1,"tableName": "submission","webhook": "http://localhost:8080/mywebhook","headers": {"API-KEY": "1234567890ABCDEF"},"notifySchemaChanges": false,"select": "completed","filter": "completed eq
+[2026-01-26T11:52:53.616Z] Response piped successfully
+[2026-01-26T11:53:07.552Z] Request query params: { host: '192.168.0.24' }
+[2026-01-26T11:53:07.552Z] Filtered query string: 
+[2026-01-26T11:53:07.552Z] GET https://192.168.0.24/fmi/odata/v4/Contacts/Webhook.GetAll
+[2026-01-26T11:53:07.558Z] Response status: 200
+[2026-01-26T11:53:07.558Z] Response headers: {
+  date: 'Mon, 26 Jan 2026 11:53:07 GMT',
+  server: 'Apache',
+  'odata-version': '4.01',
+  'content-type': 'application/json;charset=utf-8',
+  'content-length': '530',
+  'x-frame-options': 'SAMEORIGIN',
+  'x-xss-protection': '1; mode=block',
+  'access-control-allow-origin': 'NBCN-SERVER-01.local',
+  'access-control-allow-headers': 'Content-Type, Authorization',
+  'access-control-allow-credentials': 'true',
+  'x-content-type-options': 'nosniff',
+  'keep-alive': 'timeout=5, max=100',
+  connection: 'Keep-Alive'
+}
+[2026-01-26T11:53:07.558Z] Webhook response body: {"@context": "https://192.168.0.24/fmi/odata/v4/Contacts/$metadata#Webhook Processor","status": "ACTIVE","webhooks": [{"webhookID": 3,"tableName": "contact","webhook": "http://localhost:8080/mywebhook","headers": {},"notifySchemaChanges": false,"select": "","filter": "","pendingOperations": []},{"webhookID": 1,"tableName": "submission","webhook": "http://localhost:8080/mywebhook","headers": {"API-KEY": "1234567890ABCDEF"},"notifySchemaChanges": false,"select": "completed","filter": "completed eq
+[2026-01-26T11:53:07.558Z] Response piped successfully
+[2026-01-26T11:53:15.308Z] Request query params: { host: '192.168.0.24' }
+[2026-01-26T11:53:15.308Z] Filtered query string: 
+[2026-01-26T11:53:15.308Z] GET https://192.168.0.24/fmi/odata/v4/Contacts/$metadata
+[2026-01-26T11:53:15.341Z] Response status: 200
+[2026-01-26T11:53:15.341Z] Response headers: {
+  date: 'Mon, 26 Jan 2026 11:53:15 GMT',
+  server: 'Apache',
+  'odata-version': '4.01',
+  'content-type': 'application/xml;charset=utf-8',
+  'content-length': '42399',
+  'x-frame-options': 'SAMEORIGIN',
+  'x-xss-protection': '1; mode=block',
+  'access-control-allow-origin': 'NBCN-SERVER-01.local',
+  'access-control-allow-headers': 'Content-Type, Authorization',
+  'access-control-allow-credentials': 'true',
+  'x-content-type-options': 'nosniff',
+  'keep-alive': 'timeout=5, max=100',
+  connection: 'Keep-Alive'
+}
+[2026-01-26T11:53:15.342Z] Response piped successfully
+[2026-01-26T11:53:19.711Z] Request query params: { host: '192.168.0.24' }
+[2026-01-26T11:53:19.711Z] Filtered query string: 
+[2026-01-26T11:53:19.711Z] POST https://192.168.0.24/fmi/odata/v4/Contacts/Webhook.Add
+[2026-01-26T11:53:19.713Z] Request body: {"webhook":"http://localhost:8080/mywebhook","tableName":"contact","notifySchemaChanges":true,"headers":{}}
+[2026-01-26T11:53:19.720Z] Response status: 200
+[2026-01-26T11:53:19.720Z] Response headers: {
+  date: 'Mon, 26 Jan 2026 11:53:19 GMT',
+  server: 'Apache',
+  'odata-version': '4.01',
+  'content-type': 'application/json;charset=utf-8',
+  'content-length': '34',
+  'x-frame-options': 'SAMEORIGIN',
+  'x-xss-protection': '1; mode=block',
+  'access-control-allow-origin': 'NBCN-SERVER-01.local',
+  'access-control-allow-headers': 'Content-Type, Authorization',
+  'access-control-allow-credentials': 'true',
+  'x-content-type-options': 'nosniff',
+  'keep-alive': 'timeout=5, max=100',
+  connection: 'Keep-Alive'
+}
+[2026-01-26T11:53:19.720Z] Webhook response body: {"webhookResult": {"webhookID":2}}
+[2026-01-26T11:53:19.720Z] Response piped successfully
+[2026-01-26T11:53:19.725Z] Request query params: { host: '192.168.0.24' }
+[2026-01-26T11:53:19.725Z] Filtered query string: 
+[2026-01-26T11:53:19.725Z] GET https://192.168.0.24/fmi/odata/v4/Contacts/Webhook.GetAll
+[2026-01-26T11:53:19.727Z] Response status: 200
+[2026-01-26T11:53:19.727Z] Response headers: {
+  date: 'Mon, 26 Jan 2026 11:53:19 GMT',
+  server: 'Apache',
+  'odata-version': '4.01',
+  'content-type': 'application/json;charset=utf-8',
+  'content-length': '707',
+  'x-frame-options': 'SAMEORIGIN',
+  'x-xss-protection': '1; mode=block',
+  'access-control-allow-origin': 'NBCN-SERVER-01.local',
+  'access-control-allow-headers': 'Content-Type, Authorization',
+  'access-control-allow-credentials': 'true',
+  'x-content-type-options': 'nosniff',
+  'keep-alive': 'timeout=5, max=99',
+  connection: 'Keep-Alive'
+}
+[2026-01-26T11:53:19.727Z] Webhook response body: {"@context": "https://192.168.0.24/fmi/odata/v4/Contacts/$metadata#Webhook Processor","status": "ACTIVE","webhooks": [{"webhookID": 3,"tableName": "contact","webhook": "http://localhost:8080/mywebhook","headers": {},"notifySchemaChanges": false,"select": "","filter": "","pendingOperations": []},{"webhookID": 1,"tableName": "submission","webhook": "http://localhost:8080/mywebhook","headers": {"API-KEY": "1234567890ABCDEF"},"notifySchemaChanges": false,"select": "completed","filter": "completed eq
+[2026-01-26T11:53:19.727Z] Response piped successfully
+[2026-01-26T11:53:35.415Z] Request query params: { host: '192.168.0.24' }
+[2026-01-26T11:53:35.415Z] Filtered query string: 
+[2026-01-26T11:53:35.415Z] GET https://192.168.0.24/fmi/odata/v4/Contacts/$metadata
+[2026-01-26T11:53:35.442Z] Response status: 200
+[2026-01-26T11:53:35.442Z] Response headers: {
+  date: 'Mon, 26 Jan 2026 11:53:35 GMT',
+  server: 'Apache',
+  'odata-version': '4.01',
+  'content-type': 'application/xml;charset=utf-8',
+  'content-length': '42399',
+  'x-frame-options': 'SAMEORIGIN',
+  'x-xss-protection': '1; mode=block',
+  'access-control-allow-origin': 'NBCN-SERVER-01.local',
+  'access-control-allow-headers': 'Content-Type, Authorization',
+  'access-control-allow-credentials': 'true',
+  'x-content-type-options': 'nosniff',
+  'keep-alive': 'timeout=5, max=100',
+  connection: 'Keep-Alive'
+}
+[2026-01-26T11:53:35.444Z] Response piped successfully
+[2026-01-26T11:53:40.923Z] Request query params: { host: '192.168.0.24' }
+[2026-01-26T11:53:40.923Z] Filtered query string: 
+[2026-01-26T11:53:40.923Z] GET https://192.168.0.24/fmi/odata/v4/Contacts/$metadata
+[2026-01-26T11:53:40.951Z] Response status: 200
+[2026-01-26T11:53:40.951Z] Response headers: {
+  date: 'Mon, 26 Jan 2026 11:53:40 GMT',
+  server: 'Apache',
+  'odata-version': '4.01',
+  'content-type': 'application/xml;charset=utf-8',
+  'content-length': '42399',
+  'x-frame-options': 'SAMEORIGIN',
+  'x-xss-protection': '1; mode=block',
+  'access-control-allow-origin': 'NBCN-SERVER-01.local',
+  'access-control-allow-headers': 'Content-Type, Authorization',
+  'access-control-allow-credentials': 'true',
+  'x-content-type-options': 'nosniff',
+  'keep-alive': 'timeout=5, max=100',
+  connection: 'Keep-Alive'
+}
+[2026-01-26T11:53:40.952Z] Response piped successfully
+[2026-01-26T11:53:48.833Z] Request query params: { host: '192.168.0.24' }
+[2026-01-26T11:53:48.833Z] Filtered query string: 
+[2026-01-26T11:53:48.833Z] POST https://192.168.0.24/fmi/odata/v4/Contacts/Webhook.Add
+[2026-01-26T11:53:48.834Z] Request body: {"webhook":"http://localhost:8080/mywebhook","tableName":"contact","select":"first_name,last_name","notifySchemaChanges":false,"headers":{}}
+[2026-01-26T11:53:48.839Z] Response status: 200
+[2026-01-26T11:53:48.839Z] Response headers: {
+  date: 'Mon, 26 Jan 2026 11:53:48 GMT',
+  server: 'Apache',
+  'odata-version': '4.01',
+  'content-type': 'application/json;charset=utf-8',
+  'content-length': '34',
+  'x-frame-options': 'SAMEORIGIN',
+  'x-xss-protection': '1; mode=block',
+  'access-control-allow-origin': 'NBCN-SERVER-01.local',
+  'access-control-allow-headers': 'Content-Type, Authorization',
+  'access-control-allow-credentials': 'true',
+  'x-content-type-options': 'nosniff',
+  'keep-alive': 'timeout=5, max=100',
+  connection: 'Keep-Alive'
+}
+[2026-01-26T11:53:48.839Z] Webhook response body: {"webhookResult": {"webhookID":4}}
+[2026-01-26T11:53:48.839Z] Response piped successfully
+[2026-01-26T11:53:48.843Z] Request query params: { host: '192.168.0.24' }
+[2026-01-26T11:53:48.843Z] Filtered query string: 
+[2026-01-26T11:53:48.843Z] GET https://192.168.0.24/fmi/odata/v4/Contacts/Webhook.GetAll
+[2026-01-26T11:53:48.845Z] Response status: 200
+[2026-01-26T11:53:48.845Z] Response headers: {
+  date: 'Mon, 26 Jan 2026 11:53:48 GMT',
+  server: 'Apache',
+  'odata-version': '4.01',
+  'content-type': 'application/json;charset=utf-8',
+  'content-length': '905',
+  'x-frame-options': 'SAMEORIGIN',
+  'x-xss-protection': '1; mode=block',
+  'access-control-allow-origin': 'NBCN-SERVER-01.local',
+  'access-control-allow-headers': 'Content-Type, Authorization',
+  'access-control-allow-credentials': 'true',
+  'x-content-type-options': 'nosniff',
+  'keep-alive': 'timeout=5, max=99',
+  connection: 'Keep-Alive'
+}
+[2026-01-26T11:53:48.846Z] Webhook response body: {"@context": "https://192.168.0.24/fmi/odata/v4/Contacts/$metadata#Webhook Processor","status": "ACTIVE","webhooks": [{"webhookID": 3,"tableName": "contact","webhook": "http://localhost:8080/mywebhook","headers": {},"notifySchemaChanges": false,"select": "","filter": "","pendingOperations": []},{"webhookID": 1,"tableName": "submission","webhook": "http://localhost:8080/mywebhook","headers": {"API-KEY": "1234567890ABCDEF"},"notifySchemaChanges": false,"select": "completed","filter": "completed eq
+[2026-01-26T11:53:48.846Z] Response piped successfully
+[2026-01-26T11:56:41.674Z] Request query params: { host: '192.168.0.24' }
+[2026-01-26T11:56:41.674Z] Filtered query string: 
+[2026-01-26T11:56:41.674Z] GET https://192.168.0.24/fmi/odata/v4
+[2026-01-26T11:56:41.689Z] Response status: 200
+[2026-01-26T11:56:41.689Z] Response headers: {
+  date: 'Mon, 26 Jan 2026 11:56:41 GMT',
+  server: 'Apache',
+  'odata-version': '4.01',
+  'content-type': 'application/json;charset=utf-8',
+  'content-length': '1693',
+  'x-frame-options': 'SAMEORIGIN',
+  'x-xss-protection': '1; mode=block',
+  'access-control-allow-origin': 'NBCN-SERVER-01.local',
+  'access-control-allow-headers': 'Content-Type, Authorization',
+  'access-control-allow-credentials': 'true',
+  'x-content-type-options': 'nosniff',
+  'keep-alive': 'timeout=5, max=100',
+  connection: 'Keep-Alive'
+}
+[2026-01-26T11:56:41.689Z] Response piped successfully
+[2026-01-26T11:56:41.697Z] Request query params: { host: '192.168.0.24' }
+[2026-01-26T11:56:41.697Z] Filtered query string: 
+[2026-01-26T11:56:41.697Z] GET https://192.168.0.24/fmi/odata/v4
+[2026-01-26T11:56:41.704Z] Response status: 200
+[2026-01-26T11:56:41.704Z] Response headers: {
+  date: 'Mon, 26 Jan 2026 11:56:41 GMT',
+  server: 'Apache',
+  'odata-version': '4.01',
+  'content-type': 'application/json;charset=utf-8',
+  'content-length': '1693',
+  'x-frame-options': 'SAMEORIGIN',
+  'x-xss-protection': '1; mode=block',
+  'access-control-allow-origin': 'NBCN-SERVER-01.local',
+  'access-control-allow-headers': 'Content-Type, Authorization',
+  'access-control-allow-credentials': 'true',
+  'x-content-type-options': 'nosniff',
+  'keep-alive': 'timeout=5, max=99',
+  connection: 'Keep-Alive'
+}
+[2026-01-26T11:56:41.704Z] Response piped successfully
+[2026-01-26T11:56:43.206Z] Request query params: { host: '192.168.0.24' }
+[2026-01-26T11:56:43.206Z] Filtered query string: 
+[2026-01-26T11:56:43.206Z] GET https://192.168.0.24/fmi/odata/v4/Contacts/$metadata
+[2026-01-26T11:56:43.215Z] Request query params: { host: '192.168.0.24' }
+[2026-01-26T11:56:43.215Z] Filtered query string: 
+[2026-01-26T11:56:43.215Z] GET https://192.168.0.24/fmi/odata/v4/Contacts/Webhook.GetAll
+[2026-01-26T11:56:43.226Z] Response status: 200
+[2026-01-26T11:56:43.226Z] Response headers: {
+  date: 'Mon, 26 Jan 2026 11:56:43 GMT',
+  server: 'Apache',
+  'odata-version': '4.01',
+  'content-type': 'application/json;charset=utf-8',
+  'content-length': '120',
+  'x-frame-options': 'SAMEORIGIN',
+  'x-xss-protection': '1; mode=block',
+  'access-control-allow-origin': 'NBCN-SERVER-01.local',
+  'access-control-allow-headers': 'Content-Type, Authorization',
+  'access-control-allow-credentials': 'true',
+  'x-content-type-options': 'nosniff',
+  'keep-alive': 'timeout=5, max=100',
+  connection: 'Keep-Alive'
+}
+[2026-01-26T11:56:43.226Z] Webhook response body: {"@context": "https://192.168.0.24/fmi/odata/v4/Contacts/$metadata#Webhook Processor","status": "ACTIVE","webhooks": []}
+[2026-01-26T11:56:43.226Z] Response piped successfully
+[2026-01-26T11:56:43.235Z] Response status: 200
+[2026-01-26T11:56:43.235Z] Response headers: {
+  date: 'Mon, 26 Jan 2026 11:56:43 GMT',
+  server: 'Apache',
+  'odata-version': '4.01',
+  'content-type': 'application/xml;charset=utf-8',
+  'content-length': '42399',
+  'x-frame-options': 'SAMEORIGIN',
+  'x-xss-protection': '1; mode=block',
+  'access-control-allow-origin': 'NBCN-SERVER-01.local',
+  'access-control-allow-headers': 'Content-Type, Authorization',
+  'access-control-allow-credentials': 'true',
+  'x-content-type-options': 'nosniff',
+  'keep-alive': 'timeout=5, max=98',
+  connection: 'Keep-Alive'
+}
+[2026-01-26T11:56:43.236Z] Response piped successfully
+[2026-01-26T11:56:45.036Z] Request query params: { host: '192.168.0.24' }
+[2026-01-26T11:56:45.036Z] Filtered query string: 
+[2026-01-26T11:56:45.036Z] GET https://192.168.0.24/fmi/odata/v4/Contacts/$metadata
+[2026-01-26T11:56:45.059Z] Response status: 200
+[2026-01-26T11:56:45.060Z] Response headers: {
+  date: 'Mon, 26 Jan 2026 11:56:45 GMT',
+  server: 'Apache',
+  'odata-version': '4.01',
+  'content-type': 'application/xml;charset=utf-8',
+  'content-length': '42399',
+  'x-frame-options': 'SAMEORIGIN',
+  'x-xss-protection': '1; mode=block',
+  'access-control-allow-origin': 'NBCN-SERVER-01.local',
+  'access-control-allow-headers': 'Content-Type, Authorization',
+  'access-control-allow-credentials': 'true',
+  'x-content-type-options': 'nosniff',
+  'keep-alive': 'timeout=5, max=97',
+  connection: 'Keep-Alive'
+}
+[2026-01-26T11:56:45.061Z] Response piped successfully
+[2026-01-26T11:56:50.207Z] Request query params: { host: '192.168.0.24' }
+[2026-01-26T11:56:50.207Z] Filtered query string: 
+[2026-01-26T11:56:50.207Z] GET https://192.168.0.24/fmi/odata/v4/Contacts/Webhook.GetAll
+[2026-01-26T11:56:50.212Z] Response status: 200
+[2026-01-26T11:56:50.212Z] Response headers: {
+  date: 'Mon, 26 Jan 2026 11:56:50 GMT',
+  server: 'Apache',
+  'odata-version': '4.01',
+  'content-type': 'application/json;charset=utf-8',
+  'content-length': '905',
+  'x-frame-options': 'SAMEORIGIN',
+  'x-xss-protection': '1; mode=block',
+  'access-control-allow-origin': 'NBCN-SERVER-01.local',
+  'access-control-allow-headers': 'Content-Type, Authorization',
+  'access-control-allow-credentials': 'true',
+  'x-content-type-options': 'nosniff',
+  'keep-alive': 'timeout=5, max=100',
+  connection: 'Keep-Alive'
+}
+[2026-01-26T11:56:50.212Z] Webhook response body: {"@context": "https://192.168.0.24/fmi/odata/v4/Contacts/$metadata#Webhook Processor","status": "ACTIVE","webhooks": [{"webhookID": 3,"tableName": "contact","webhook": "http://localhost:8080/mywebhook","headers": {},"notifySchemaChanges": false,"select": "","filter": "","pendingOperations": []},{"webhookID": 1,"tableName": "submission","webhook": "http://localhost:8080/mywebhook","headers": {"API-KEY": "1234567890ABCDEF"},"notifySchemaChanges": false,"select": "completed","filter": "completed eq
+[2026-01-26T11:56:50.212Z] Response piped successfully
+[2026-01-26T11:56:55.551Z] Request query params: { host: '192.168.0.24' }
+[2026-01-26T11:56:55.551Z] Filtered query string: 
+[2026-01-26T11:56:55.551Z] GET https://192.168.0.24/fmi/odata/v4/Contacts/$metadata
+[2026-01-26T11:56:55.590Z] Response status: 200
+[2026-01-26T11:56:55.590Z] Response headers: {
+  date: 'Mon, 26 Jan 2026 11:56:55 GMT',
+  server: 'Apache',
+  'odata-version': '4.01',
+  'content-type': 'application/xml;charset=utf-8',
+  'content-length': '42399',
+  'x-frame-options': 'SAMEORIGIN',
+  'x-xss-protection': '1; mode=block',
+  'access-control-allow-origin': 'NBCN-SERVER-01.local',
+  'access-control-allow-headers': 'Content-Type, Authorization',
+  'access-control-allow-credentials': 'true',
+  'x-content-type-options': 'nosniff',
+  'keep-alive': 'timeout=5, max=100',
+  connection: 'Keep-Alive'
+}
+[2026-01-26T11:56:55.592Z] Response piped successfully
+[2026-01-26T11:57:00.830Z] Request query params: { host: '192.168.0.24' }
+[2026-01-26T11:57:00.830Z] Filtered query string: 
+[2026-01-26T11:57:00.830Z] POST https://192.168.0.24/fmi/odata/v4/Contacts/Webhook.Update(4)
+[2026-01-26T11:57:00.832Z] Request body: {"webhook":"http://localhost:8080/mywebhook","tableName":"contact","select":"first_name,last_name,photo_url,title","notifySchemaChanges":false,"headers":{}}
+[2026-01-26T11:57:00.835Z] Response status: 400
+[2026-01-26T11:57:00.835Z] Response headers: {
+  date: 'Mon, 26 Jan 2026 11:57:00 GMT',
+  server: 'Apache',
+  'odata-version': '4.01',
+  'content-type': 'application/json;charset=utf-8',
+  'content-length': '78',
+  'x-frame-options': 'SAMEORIGIN',
+  'x-xss-protection': '1; mode=block',
+  'access-control-allow-origin': 'NBCN-SERVER-01.local',
+  'access-control-allow-headers': 'Content-Type, Authorization',
+  'access-control-allow-credentials': 'true',
+  'x-content-type-options': 'nosniff',
+  connection: 'close'
+}
+[2026-01-26T11:57:00.836Z] Error response body: {"error": {"code": "-1009","message": "Key not allowed for insert operation"}}
+[2026-01-26T11:57:00.836Z] Response piped successfully

@@ -97,19 +97,27 @@ export function WebhookDialog({ open, onClose, webhook }: WebhookDialogProps) {
         }
       }
 
-      await fileMakerService.createWebhook(currentDatabase.name, {
+      const params = {
         webhook: webhookUrl,
         tableName,
         select: selectedFields.length > 0 ? selectedFields.join(',') : undefined,
         filter: filter.trim() || undefined,
         notifySchemaChanges,
         headers,
-      })
+      }
+
+      if (webhook) {
+        // Update existing webhook
+        await fileMakerService.updateWebhook(currentDatabase.name, webhook.id, params)
+      } else {
+        // Create new webhook
+        await fileMakerService.createWebhook(currentDatabase.name, params)
+      }
 
       onClose(true)
       resetForm()
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to create webhook')
+      setError(err instanceof Error ? err.message : 'Failed to save webhook')
     } finally {
       setIsLoading(false)
     }

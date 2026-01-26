@@ -9,6 +9,7 @@ import type {
 
 class FileMakerService {
   private connection: FileMakerConnection | null = null
+  private backendUrl = 'http://localhost:3000/api/filemaker'
 
   setConnection(connection: FileMakerConnection) {
     this.connection = connection
@@ -33,6 +34,17 @@ class FileMakerService {
     return database ? `${baseUrl}/${database}` : baseUrl
   }
 
+  private getBackendUrl(path: string): string {
+    if (!this.connection) {
+      throw new Error('No connection configured')
+    }
+    // Convert FileMaker URL to backend API path
+    // e.g., https://192.168.0.24/fmi/odata/v4 -> /api/filemaker/fmi/odata/v4?host=192.168.0.24
+    const url = new URL(path)
+    const separator = url.search ? '&' : '?'
+    return `${this.backendUrl}${url.pathname}${url.search}${separator}host=${this.connection.host}`
+  }
+
   async testConnection(): Promise<boolean> {
     try {
       await this.getDatabases()
@@ -46,9 +58,11 @@ class FileMakerService {
   async getDatabases(): Promise<Database[]> {
     try {
       const url = this.getBaseUrl()
+      const backendUrl = this.getBackendUrl(url)
       console.log('Fetching databases from:', url)
+      console.log('Via backend:', backendUrl)
 
-      const response = await fetch(url, {
+      const response = await fetch(backendUrl, {
         headers: {
           'Authorization': this.getAuthHeader(),
         },
@@ -75,14 +89,22 @@ class FileMakerService {
       return data.value || []
     } catch (error) {
       if (error instanceof TypeError && error.message.includes('fetch')) {
-        throw new Error(`Cannot reach server at ${this.connection?.host}. Check the hostname and ensure the server is running.`)
+        throw new Error(
+          `Cannot reach server at ${this.connection?.host}. This may be due to:\n` +
+          `1. SSL Certificate Error: Visit https://${this.connection?.host}/fmi/odata/v4 in your browser and accept the certificate warning\n` +
+          `2. Server not running or wrong hostname\n` +
+          `3. CORS restrictions\n\n` +
+          `Error details: ${error.message}`
+        )
       }
       throw error
     }
   }
 
   async getMetadata(database: string): Promise<TableMetadata[]> {
-    const response = await fetch(`${this.getBaseUrl(database)}/$metadata`, {
+    const url = `${this.getBaseUrl(database)}/$metadata`
+    const backendUrl = this.getBackendUrl(url)
+    const response = await fetch(backendUrl, {
       headers: {
         'Authorization': this.getAuthHeader(),
       },
@@ -101,21 +123,27 @@ class FileMakerService {
     const xmlDoc = parser.parseFromString(xmlText, 'text/xml')
     const tables: TableMetadata[] = []
 
-    const entityTypes = xmlDoc.getElementsByTagName('EntityType')
-    for (let i = 0; i < entityTypes.length; i++) {
-      const entityType = entityTypes[i]
-      const tableName = entityType.getAttribute('Name')
-      if (!tableName) continue
+    const entityTypes = xmlDoc.querySelectorAll('EntityType')
+
+    entityTypes.forEach((entityType) => {
+      let tableName = entityType.getAttribute('Name')
+      if (!tableName) return
+
+      // Remove any trailing underscores and trim whitespace
+      tableName = tableName.trim().replace(/_+$/, '')
+      if (!tableName) return
 
       const fields: FieldMetadata[] = []
-      const properties = entityType.getElementsByTagName('Property')
+      const properties = entityType.querySelectorAll('Property')
 
-      for (let j = 0; j < properties.length; j++) {
-        const prop = properties[j]
-        const fieldName = prop.getAttribute('Name')
+      properties.forEach((prop) => {
+        let fieldName = prop.getAttribute('Name')
         const fieldType = prop.getAttribute('Type')
 
-        if (!fieldName || !fieldType) continue
+        if (!fieldName || !fieldType) return
+
+        // Clean field name too
+        fieldName = fieldName.trim().replace(/_+$/, '')
 
         fields.push({
           name: fieldName,
@@ -126,25 +154,25 @@ class FileMakerService {
           global: prop.getAttributeNS('http://www.filemaker.com/fmpdsoresult', 'Global') === 'true',
           calculation: prop.getAttributeNS('http://www.filemaker.com/fmpdsoresult', 'Calculation') === 'true',
         })
-      }
+      })
 
       tables.push({
         name: tableName,
         fields,
       })
-    }
+    })
 
     return tables
   }
 
   async getAllWebhooks(database: string): Promise<Webhook[]> {
-    const response = await fetch(`${this.getBaseUrl(database)}/Webhook.GetAll`, {
-      method: 'POST',
+    const url = `${this.getBaseUrl(database)}/Webhook.GetAll`
+    const backendUrl = this.getBackendUrl(url)
+    const response = await fetch(backendUrl, {
+      method: 'GET',
       headers: {
         'Authorization': this.getAuthHeader(),
-        'Content-Type': 'application/json',
       },
-      body: JSON.stringify({}),
     })
 
     if (!response.ok) {
@@ -152,17 +180,23 @@ class FileMakerService {
     }
 
     const data = await response.json()
-    return data.value || []
+    // Transform FileMaker's webhookID to id
+    return (data.webhooks || []).map((wh: any) => ({
+      ...wh,
+      id: String(wh.webhookID),
+    }))
   }
 
   async createWebhook(database: string, params: WebhookCreateParams): Promise<Webhook> {
-    const response = await fetch(`${this.getBaseUrl(database)}/Webhook.Add`, {
+    const url = `${this.getBaseUrl(database)}/Webhook.Add`
+    const backendUrl = this.getBackendUrl(url)
+    const response = await fetch(backendUrl, {
       method: 'POST',
       headers: {
         'Authorization': this.getAuthHeader(),
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify(params),
+      body: JSON.stringify(params) || undefined,
     })
 
     if (!response.ok) {
@@ -174,14 +208,25 @@ class FileMakerService {
     return data
   }
 
+  async updateWebhook(database: string, webhookId: string, params: WebhookCreateParams): Promise<Webhook> {
+    // FileMaker OData only supports: Add, Delete, Get, GetAll, Invoke
+    // No native update operation exists, so we must delete and recreate
+    // NOTE: This changes the webhook ID - FileMaker generates new sequential IDs
+    // This means any external system referencing the old ID will break
+    await this.deleteWebhook(database, webhookId)
+    return this.createWebhook(database, params)
+  }
+
   async deleteWebhook(database: string, webhookId: string): Promise<void> {
-    const response = await fetch(`${this.getBaseUrl(database)}/Webhook.Delete`, {
+    const url = `${this.getBaseUrl(database)}/Webhook.Delete(${webhookId})`
+    const backendUrl = this.getBackendUrl(url)
+    const response = await fetch(backendUrl, {
       method: 'POST',
       headers: {
         'Authorization': this.getAuthHeader(),
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ id: webhookId }),
+      body: JSON.stringify({}),
     })
 
     if (!response.ok) {
@@ -189,26 +234,78 @@ class FileMakerService {
     }
   }
 
-  async invokeWebhook(database: string, webhookId: string, rowIds?: string[]): Promise<void> {
-    const response = await fetch(`${this.getBaseUrl(database)}/Webhook.Invoke`, {
+  async invokeWebhook(database: string, webhookId: string, tableName?: string): Promise<void> {
+    let rowIds: number[] = []
+
+    // If tableName is provided, fetch sample record IDs from that table
+    if (tableName) {
+      try {
+        const urlObj = new URL(`${this.getBaseUrl(database)}/${tableName}`)
+        urlObj.searchParams.set('$select', 'id')
+        urlObj.searchParams.set('$top', '5')
+        const backendUrl = this.getBackendUrl(urlObj.toString())
+        console.log('Fetching record IDs from:', backendUrl)
+        const response = await fetch(backendUrl, {
+          headers: {
+            'Authorization': this.getAuthHeader(),
+          },
+        })
+
+        if (response.ok) {
+          const data = await response.json()
+          console.log('Fetched data:', data)
+          // Extract record IDs from the response
+          if (data.value && Array.isArray(data.value)) {
+            rowIds = data.value.map((record: any) => record.id).filter((id: any) => id !== undefined)
+            console.log('Extracted row IDs:', rowIds)
+          } else {
+            console.warn('No records found in response or invalid format')
+          }
+        } else {
+          const errorText = await response.text()
+          console.warn(`Failed to fetch record IDs, status: ${response.status}, error: ${errorText}`)
+        }
+      } catch (err) {
+        console.warn('Failed to fetch record IDs, using default:', err)
+      }
+    }
+
+    // If we couldn't fetch any IDs, use a default
+    if (rowIds.length === 0) {
+      console.log('No row IDs found, using default [1]')
+      rowIds = [1]
+    }
+
+    const url = `${this.getBaseUrl(database)}/Webhook.Invoke(${webhookId})`
+    const backendUrl = this.getBackendUrl(url)
+    const bodyPayload = { rowIDs: rowIds }
+    const bodyString = JSON.stringify(bodyPayload)
+    console.log('Invoking webhook with body:', bodyString)
+    console.log('Backend URL:', backendUrl)
+    console.log('Row IDs to invoke:', rowIds)
+    
+    const fetchOptions = {
       method: 'POST',
       headers: {
         'Authorization': this.getAuthHeader(),
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({
-        id: webhookId,
-        ...(rowIds && { rowIds }),
-      }),
-    })
+      body: bodyString,
+    }
+    console.log('Fetch options:', fetchOptions)
+    
+    const response = await fetch(backendUrl, fetchOptions)
 
     if (!response.ok) {
-      throw new Error(`Failed to invoke webhook: ${response.statusText}`)
+      const errorText = await response.text()
+      throw new Error(`Failed to invoke webhook: ${response.statusText} - ${errorText}`)
     }
   }
 
   async executeScript(database: string, scriptName: string, parameter?: string | number | object): Promise<any> {
-    const response = await fetch(`${this.getBaseUrl(database)}/Script.${scriptName}`, {
+    const url = `${this.getBaseUrl(database)}/Script.${scriptName}`
+    const backendUrl = this.getBackendUrl(url)
+    const response = await fetch(backendUrl, {
       method: 'POST',
       headers: {
         'Authorization': this.getAuthHeader(),
@@ -216,7 +313,7 @@ class FileMakerService {
       },
       body: JSON.stringify({
         scriptParameterValue: parameter,
-      }),
+      }) || undefined,
     })
 
     if (!response.ok) {

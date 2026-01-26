@@ -1,30 +1,39 @@
+import { useState } from 'react'
 import { FileMakerProvider } from './contexts/FileMakerContext'
 import { ConnectionForm } from './components/ConnectionForm'
-import { DatabaseBrowser } from './components/DatabaseBrowser'
-import { WebhookManager } from './components/WebhookManager'
+import { MainLayout } from './components/MainLayout'
+import { HeaderContent } from './components/HeaderContent'
 
 function App() {
+  const [showConnectionModal, setShowConnectionModal] = useState(false)
+
   return (
     <FileMakerProvider>
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100">
-        <header className="bg-white shadow-sm border-b border-slate-200">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-            <h1 className="text-2xl font-bold text-slate-900">
-              FileMaker OData Webhooks Manager
-            </h1>
-            <p className="text-sm text-slate-600 mt-1">
-              Manage FileMaker Server webhooks via OData API
-            </p>
-          </div>
+      <div className="min-h-screen bg-white">
+        <header className="bg-white border-b border-slate-200">
+          <HeaderContent onOpenConnection={() => setShowConnectionModal(true)} />
         </header>
 
-        <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <div className="space-y-6">
-            <ConnectionForm />
-            <DatabaseBrowser />
-            <WebhookManager />
-          </div>
+        <main className="flex h-[calc(100vh-80px)]">
+          <MainLayout />
         </main>
+
+        {showConnectionModal && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <div className="bg-white rounded-lg shadow-lg w-full max-w-md p-6 max-h-[90vh] overflow-y-auto">
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-lg font-bold text-slate-900">Connect to FileMaker Server</h2>
+                <button
+                  onClick={() => setShowConnectionModal(false)}
+                  className="text-slate-400 hover:text-slate-600"
+                >
+                  ✕
+                </button>
+              </div>
+              <ConnectionForm onClose={() => setShowConnectionModal(false)} />
+            </div>
+          </div>
+        )}
       </div>
     </FileMakerProvider>
   )

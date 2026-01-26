@@ -12,7 +12,7 @@ FileMaker OData uses **HTTP Basic Authentication** with database-level accounts.
 
 ## For Your Contacts.fmp12 Example
 
-Since you have **Contacts.fmp12** with fmrest/OData already activated:
+Since you have **Contacts.fmp12** with fmodata/OData already activated:
 
 ### Step 1: Verify Your Account in FileMaker Pro
 
@@ -22,7 +22,7 @@ Since you have **Contacts.fmp12** with fmrest/OData already activated:
 4. Click on the account and check its **Privilege Set**
 5. Click **Edit** on the Privilege Set
 6. Go to **Extended Privileges** tab
-7. Verify **"fmrest"** is checked ✓
+7. Verify **"fmodata"** is checked ✓
 
 ### Step 2: Connect in the Web App
 
@@ -66,18 +66,18 @@ Click **Connect**. The app will:
 **Possible causes:**
 - Wrong username or password
 - Account doesn't exist in the database
-- Account doesn't have fmrest privilege
+- Account doesn't have fmodata privilege
 
 **Solutions:**
 1. Double-check username and password in FileMaker Pro
-2. Verify the account has fmrest extended privilege
+2. Verify the account has fmodata extended privilege
 3. Try the credentials in your browser at `https://YOUR_SERVER/fmi/odata/v4`
 
 ### ❌ Can See Databases but Can't Access Metadata/Webhooks
 
 **Possible causes:**
 - The account exists in some databases but not others
-- The account has fmrest in some databases but not all
+- The account has fmodata in some databases but not all
 
 **Solutions:**
 1. Ensure the same account (username/password) exists in all databases you want to manage
@@ -106,14 +106,14 @@ Click **Connect**. The app will:
 
 ### For Development/Testing
 - Use your existing database account that has Full Access or Admin privileges
-- Ensure fmrest is enabled
+- Ensure fmodata is enabled
 
 ### For Production
 1. Create a dedicated account for webhook management:
    - Username: `webhook_manager` (or similar)
    - Privilege Set: Custom with:
      - Access to All Records (or specific tables you want to monitor)
-     - fmrest extended privilege enabled
+     - fmodata extended privilege enabled
      - Ability to run scripts (if using script callbacks)
 2. Use the **same account credentials** across all databases on the server
 3. Store credentials securely (not in the app - enter them each session)
