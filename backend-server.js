@@ -111,13 +111,21 @@ app.all('/api/filemaker/*', (req, res) => {
 
     filemakerReq.on('error', (error) => {
       console.error('FileMaker request error:', error.message)
-      res.status(502).json({ error: 'Bad Gateway', details: error.message })
+      if (!res.headersSent) {
+        res.status(502).json({ error: 'Bad Gateway', details: error.message })
+      } else {
+        res.end()
+      }
     })
 
     filemakerReq.on('timeout', () => {
       console.error('FileMaker request timeout')
       filemakerReq.destroy()
-      res.status(504).json({ error: 'Gateway Timeout' })
+      if (!res.headersSent) {
+        res.status(504).json({ error: 'Gateway Timeout' })
+      } else {
+        res.end()
+      }
     })
 
     // Forward request body

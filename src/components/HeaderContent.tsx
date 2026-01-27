@@ -1,18 +1,47 @@
+import { useState } from 'react'
 import { useFileMaker } from '@/contexts/FileMakerContext'
+import { HostSelector } from './HostSelector'
+import { LoginDialog } from './LoginDialog'
+import { Button } from '@/components/ui/button'
 
-interface HeaderContentProps {
-  onOpenConnection: () => void
-}
+interface HeaderContentProps {}
 
-export function HeaderContent({ onOpenConnection }: HeaderContentProps) {
-  const { isConnected, connection, disconnect } = useFileMaker()
+export function HeaderContent({}: HeaderContentProps) {
+  const { isConnected, connection, disconnect, setConnection } = useFileMaker()
+  const [selectedHost, setSelectedHost] = useState('')
+  const [showLoginDialog, setShowLoginDialog] = useState(false)
+  const [isConnecting, setIsConnecting] = useState(false)
+  const [loginError, setLoginError] = useState<string | null>(null)
 
-  const handleConnectionClick = () => {
-    if (isConnected) {
-      disconnect()
-    } else {
-      onOpenConnection()
+  const handleHostConnect = (host: string) => {
+    setSelectedHost(host)
+    setLoginError(null)
+    setShowLoginDialog(true)
+  }
+
+  const handleLogin = async (username: string, password: string) => {
+    setLoginError(null)
+    setIsConnecting(true)
+
+    try {
+      const { fileMakerService } = await import('@/services/filemaker')
+      const newConnection = { host: selectedHost, username, password }
+      fileMakerService.setConnection(newConnection)
+      await fileMakerService.testConnection()
+      setConnection(newConnection)
+      setShowLoginDialog(false)
+      setSelectedHost('')
+      setIsConnecting(false)
+    } catch (err) {
+      setIsConnecting(false)
+      setLoginError(err instanceof Error ? err.message : 'Connection failed. Check console for details.')
     }
+  }
+
+  const handleDisconnect = () => {
+    disconnect()
+    setSelectedHost('')
+    setLoginError(null)
   }
 
   return (
@@ -26,27 +55,37 @@ export function HeaderContent({ onOpenConnection }: HeaderContentProps) {
         </p>
       </div>
       <div className="flex items-center gap-4">
-        <div className="flex items-center gap-2">
-          <label className="text-sm font-medium text-slate-700">Database host:</label>
-          <input
-            type="text"
-            value={connection?.host || ''}
-            placeholder="https://192.168.0.24"
-            className="px-3 py-1.5 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-            disabled
+        {isConnected ? (
+          <div className="flex items-center gap-2">
+            <div className="text-right">
+              <p className="text-xs text-slate-500">Connected to:</p>
+              <p className="text-sm font-medium text-slate-900">{connection?.host}</p>
+            </div>
+            <Button
+              onClick={handleDisconnect}
+              variant="destructive"
+              size="sm"
+            >
+              Disconnect
+            </Button>
+          </div>
+        ) : (
+          <HostSelector
+            onConnect={handleHostConnect}
+            isLoading={isConnecting}
           />
-        </div>
-        <button
-          onClick={handleConnectionClick}
-          className={`px-4 py-1.5 text-white text-sm font-medium rounded-md transition-colors ${
-            isConnected
-              ? 'bg-red-600 hover:bg-red-700'
-              : 'bg-blue-600 hover:bg-blue-700'
-          }`}
-        >
-          {isConnected ? 'disconnect' : 'connect'}
-        </button>
+        )}
       </div>
+
+      {showLoginDialog && (
+        <LoginDialog
+          host={selectedHost}
+          onLogin={handleLogin}
+          onClose={() => setShowLoginDialog(false)}
+          isLoading={isConnecting}
+          error={loginError}
+        />
+      )}
     </div>
   )
 }
