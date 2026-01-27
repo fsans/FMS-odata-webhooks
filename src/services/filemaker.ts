@@ -1,3 +1,4 @@
+
 import type {
   FileMakerConnection,
   Database,
@@ -240,10 +241,10 @@ class FileMakerService {
     // If tableName is provided, fetch sample record IDs from that table
     if (tableName) {
       try {
-        const urlObj = new URL(`${this.getBaseUrl(database)}/${tableName}`)
-        urlObj.searchParams.set('$select', 'id')
-        urlObj.searchParams.set('$top', '5')
-        const backendUrl = this.getBackendUrl(urlObj.toString())
+        const baseUrl = `${this.getBaseUrl(database)}/${tableName}`
+        const queryString = `$select="id"&$top=5`
+        const fullUrl = `${baseUrl}?${queryString}`
+        const backendUrl = this.getBackendUrl(fullUrl)
         console.log('Fetching record IDs from:', backendUrl)
         const response = await fetch(backendUrl, {
           headers: {

@@ -87,6 +87,22 @@ npm run preview
    - Test webhooks using the Play button
    - Delete webhooks when no longer needed
 
+## ⚠️ Important: Reserved Field Names in OData Queries
+
+**The `id` field is a reserved word in FileMaker OData and MUST be quoted in `$select` parameters.**
+
+When querying records and selecting the `id` field, always use:
+```
+$select="id"
+```
+
+NOT:
+```
+$select=id
+```
+
+This is a FileMaker-specific requirement. Failure to quote reserved field names will result in OData parsing errors.
+
 ## Requirements
 
 - FileMaker Server 22.0.4 or later (with OData webhooks support)

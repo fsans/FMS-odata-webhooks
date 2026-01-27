@@ -161,6 +161,22 @@ npm run lint        # Lint code (if configured)
 - Webhooks are standards-based (OData v4) and work naturally with serverless platforms, iPaaS tools (Zapier, Make), and custom APIs
 - Use `Webhook.Invoke` for testing integrations without modifying live data
 
+### ⚠️ CRITICAL: Reserved Field Names in OData Queries
+
+**The `id` field is a reserved word in FileMaker OData and MUST be quoted in `$select` parameters.**
+
+When querying records and selecting the `id` field, always use:
+```
+$select="id"
+```
+
+NOT:
+```
+$select=id
+```
+
+This applies to any OData query that selects the `id` field. Failure to quote it will result in OData parsing errors. This is a FileMaker-specific requirement and differs from standard OData behavior.
+
 ## Common Use Cases
 
 Webhooks enable event-driven integrations for:
