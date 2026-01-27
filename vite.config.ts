@@ -6,6 +6,7 @@ const isDev = process.env.NODE_ENV === 'development'
 
 // https://vite.dev/config/
 export default defineConfig({
+  base: '/',
   plugins: [react()],
   resolve: {
     alias: {

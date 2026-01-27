@@ -10,7 +10,7 @@ import type {
 
 class FileMakerService {
   private connection: FileMakerConnection | null = null
-  private backendUrl = 'http://localhost:3000/api/filemaker'
+  private backendUrl = '/api/filemaker'
 
   setConnection(connection: FileMakerConnection) {
     this.connection = connection
@@ -40,10 +40,10 @@ class FileMakerService {
       throw new Error('No connection configured')
     }
     // Convert FileMaker URL to backend API path
-    // e.g., https://192.168.0.24/fmi/odata/v4 -> /api/filemaker/fmi/odata/v4?host=192.168.0.24
+    // When using Nginx reverse proxy, just pass the path without host parameter
+    // Nginx is configured to proxy to the hardcoded FileMaker host
     const url = new URL(path)
-    const separator = url.search ? '&' : '?'
-    return `${this.backendUrl}${url.pathname}${url.search}${separator}host=${this.connection.host}`
+    return `${this.backendUrl}${url.pathname}${url.search}`
   }
 
   async testConnection(): Promise<boolean> {
