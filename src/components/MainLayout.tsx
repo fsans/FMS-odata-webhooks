@@ -2,13 +2,14 @@ import { useState, useEffect } from 'react'
 import { useFileMaker } from '@/contexts/FileMakerContext'
 import { fileMakerService } from '@/services/filemaker'
 import type { Database } from '@/types/filemaker'
-import { Database as DatabaseIcon } from 'lucide-react'
+import { Database as DatabaseIcon, Search, X } from 'lucide-react'
 import { TabsPanel } from './TabsPanel'
 
 export function MainLayout() {
   const { isConnected, currentDatabase, setCurrentDatabase } = useFileMaker()
   const [databases, setDatabases] = useState<Database[]>([])
   const [isLoadingDatabases, setIsLoadingDatabases] = useState(false)
+  const [searchQuery, setSearchQuery] = useState('')
 
   useEffect(() => {
     if (isConnected) {
@@ -35,19 +36,45 @@ export function MainLayout() {
     setCurrentDatabase(database)
   }
 
+  const filteredDatabases = databases.filter((db) =>
+    db.name.toLowerCase().includes(searchQuery.toLowerCase())
+  )
+
   return (
     <>
       {/* Left Sidebar - Databases List */}
-      <div className="w-64 border-r border-slate-200 bg-slate-50 overflow-y-auto">
-        <div className="p-4">
+      <div className="w-64 border-r border-slate-200 bg-slate-50 overflow-y-auto flex flex-col">
+        <div className="p-2 border-b border-slate-200 flex-shrink-0">
           <h2 className="text-sm font-semibold text-slate-900 mb-3">Databases</h2>
+          <div className="relative">
+            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-slate-400" />
+            <input
+              type="text"
+              placeholder="Search databases..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full pl-8 pr-8 py-1.5 text-sm border border-slate-300 rounded-md bg-white focus:outline-none focus:ring-2 focus:ring-slate-950 focus:border-transparent"
+            />
+            {searchQuery && (
+              <button
+                onClick={() => setSearchQuery('')}
+                className="absolute right-2.5 top-2.5 text-slate-400 hover:text-slate-600"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            )}
+          </div>
+        </div>
+        <div className="flex-1 overflow-y-auto p-4">
           {isLoadingDatabases ? (
             <p className="text-xs text-slate-500">Loading...</p>
-          ) : databases.length === 0 ? (
-            <p className="text-xs text-slate-500">No databases available</p>
+          ) : filteredDatabases.length === 0 ? (
+            <p className="text-xs text-slate-500">
+              {databases.length === 0 ? 'No databases available' : 'No databases match your search'}
+            </p>
           ) : (
             <div className="space-y-1">
-              {databases.map((db) => (
+              {filteredDatabases.map((db) => (
                 <button
                   key={db.name}
                   onClick={() => handleDatabaseSelect(db)}

@@ -2,7 +2,9 @@ import { useState } from 'react'
 import { useFileMaker } from '@/contexts/FileMakerContext'
 import { HostSelector } from './HostSelector'
 import { LoginDialog } from './LoginDialog'
+import { InfoDrawer } from './InfoDrawer'
 import { Button } from '@/components/ui/button'
+import { HelpCircle } from 'lucide-react'
 
 interface HeaderContentProps {}
 
@@ -12,6 +14,7 @@ export function HeaderContent({}: HeaderContentProps) {
   const [showLoginDialog, setShowLoginDialog] = useState(false)
   const [isConnecting, setIsConnecting] = useState(false)
   const [loginError, setLoginError] = useState<string | null>(null)
+  const [showInfoDrawer, setShowInfoDrawer] = useState(false)
 
   const handleHostConnect = (host: string) => {
     setSelectedHost(host)
@@ -54,7 +57,7 @@ export function HeaderContent({}: HeaderContentProps) {
           Manage FileMaker Server webhooks via OData API
         </p>
       </div>
-      <div className="flex items-center gap-4">
+      <div className="flex items-end gap-2">
         {isConnected ? (
           <div className="flex items-center gap-2">
             <div className="text-right">
@@ -75,6 +78,14 @@ export function HeaderContent({}: HeaderContentProps) {
             isLoading={isConnecting}
           />
         )}
+
+        <button
+          onClick={() => setShowInfoDrawer(true)}
+          className="p-2 hover:bg-slate-100 rounded-md transition-colors text-slate-600 hover:text-slate-900 h-9"
+          title="Help & Information"
+        >
+          <HelpCircle className="h-5 w-5" />
+        </button>
       </div>
 
       {showLoginDialog && (
@@ -86,6 +97,11 @@ export function HeaderContent({}: HeaderContentProps) {
           error={loginError}
         />
       )}
+
+      <InfoDrawer
+        isOpen={showInfoDrawer}
+        onClose={() => setShowInfoDrawer(false)}
+      />
     </div>
   )
 }
