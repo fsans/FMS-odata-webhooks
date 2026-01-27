@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { fileMakerService } from '@/services/filemaker'
 import type { Database, TableMetadata } from '@/types/filemaker'
 import { Table, ChevronDown, ChevronRight, Plus, RefreshCw, Play, Trash2 } from 'lucide-react'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { WebhookDialog } from './WebhookDialog'
 import type { Webhook } from '@/types/filemaker'
 
@@ -94,40 +95,20 @@ export function TabsPanel({ database }: TabsPanelProps) {
 
   return (
     <div className="flex flex-col h-full">
-      {/* Tab Buttons */}
-      <div className="border-b border-slate-200 px-6 py-4 flex gap-4">
-        <button
-          onClick={() => setActiveTab('tables')}
-          className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${
-            activeTab === 'tables'
-              ? 'bg-slate-900 text-white'
-              : 'bg-slate-200 text-slate-700 hover:bg-slate-300'
-          }`}
-        >
-          Tables tab
-        </button>
-        <button
-          onClick={() => setActiveTab('webhooks')}
-          className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${
-            activeTab === 'webhooks'
-              ? 'bg-slate-900 text-white'
-              : 'bg-slate-200 text-slate-700 hover:bg-slate-300'
-          }`}
-        >
-          Webhooks tab
-        </button>
-      </div>
+      <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as 'tables' | 'webhooks')} className="flex flex-col h-full">
+        <TabsList variant="line" className="px-6 py-0 rounded-none border-b border-slate-200 w-full justify-start">
+          <TabsTrigger value="tables">Tables</TabsTrigger>
+          <TabsTrigger value="webhooks">Webhooks</TabsTrigger>
+        </TabsList>
 
-      {/* Tab Content */}
-      <div className="flex-1 overflow-y-auto">
-        {error && (
-          <div className="mx-6 mt-4 p-3 bg-red-50 border border-red-200 rounded-md text-sm text-red-600">
-            {error}
-          </div>
-        )}
+        <div className="flex-1 overflow-y-auto">
+          {error && (
+            <div className="mx-6 mt-4 p-3 bg-red-50 border border-red-200 rounded-md text-sm text-red-600">
+              {error}
+            </div>
+          )}
 
-        {activeTab === 'tables' && (
-          <div className="p-6">
+          <TabsContent value="tables" className="m-0 p-6">
             <h3 className="text-sm font-semibold text-slate-900 mb-4">
               Tables in {database.name}
             </h3>
@@ -179,11 +160,9 @@ export function TabsPanel({ database }: TabsPanelProps) {
                 ))}
               </div>
             )}
-          </div>
-        )}
+          </TabsContent>
 
-        {activeTab === 'webhooks' && (
-          <div className="p-6">
+          <TabsContent value="webhooks" className="m-0 p-6">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-sm font-semibold text-slate-900">
                 Webhook Manager
@@ -275,9 +254,9 @@ export function TabsPanel({ database }: TabsPanelProps) {
                 ))}
               </div>
             )}
-          </div>
-        )}
-      </div>
+          </TabsContent>
+        </div>
+      </Tabs>
 
       <WebhookDialog
         open={isDialogOpen}
