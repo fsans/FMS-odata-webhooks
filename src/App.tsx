@@ -1,6 +1,7 @@
 import { FileMakerProvider } from './contexts/FileMakerContext'
 import { MainLayout } from './components/MainLayout'
 import { HeaderContent } from './components/HeaderContent'
+import packageInfo from '../package.json'
 
 function App() {
   return (
@@ -16,7 +17,7 @@ function App() {
 
         <footer className="h-[40px] bg-white border-t border-slate-200 flex items-center justify-between px-6">
           <div className="text-xs text-slate-600">
-            <span>FileMaker OData Webhooks Manager v1.0.2</span>
+            <span>FileMaker OData Webhooks Manager v{packageInfo.version}</span>
             <span className="mx-2">•</span>
             <span>Copyright © nBCN Software 2026 Barcelona</span>
           </div>

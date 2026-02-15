@@ -1,4 +1,5 @@
 import { X, Info } from 'lucide-react'
+import packageInfo from '../../package.json'
 
 interface InfoDrawerProps {
   isOpen: boolean
@@ -72,7 +73,7 @@ export function InfoDrawer({ isOpen, onClose }: InfoDrawerProps) {
               <h3 className="text-sm font-semibold text-slate-900 mb-3">About</h3>
               <div className="space-y-2 text-sm text-slate-600">
                 <p><span className="font-medium text-slate-900">FileMaker OData Webhooks Manager</span></p>
-                <p className="text-xs">Version 1.0.2</p>
+                <p className="text-xs">Version {packageInfo.version}</p>
                 <p className="text-xs">Copyright © nBCN Software 2005 Barcelona</p>
               </div>
             </section>
