@@ -18,7 +18,7 @@ import type { Webhook, TableMetadata } from '@/types/filemaker'
 
 interface WebhookDialogProps {
   open: boolean
-  onClose: (success: boolean) => void
+  onClose: (success: boolean, updateInfo?: { webhook: Webhook; oldId: string }) => void
   webhook?: Webhook
 }
 
@@ -107,14 +107,15 @@ export function WebhookDialog({ open, onClose, webhook }: WebhookDialogProps) {
       }
 
       if (webhook) {
-        // Update existing webhook
-        await fileMakerService.updateWebhook(currentDatabase.name, webhook.id, params)
+        // Update existing webhook (delete + recreate)
+        const result = await fileMakerService.updateWebhook(currentDatabase.name, webhook.id, params)
+        // Pass the updated webhook info back to parent
+        onClose(true, { webhook: result.webhook, oldId: result.oldId })
       } else {
         // Create new webhook
         await fileMakerService.createWebhook(currentDatabase.name, params)
+        onClose(true)
       }
-
-      onClose(true)
       resetForm()
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to save webhook')

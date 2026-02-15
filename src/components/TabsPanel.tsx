@@ -59,10 +59,18 @@ export function TabsPanel({ database }: TabsPanelProps) {
     if (!confirm('Are you sure you want to delete this webhook?')) return
 
     try {
+      // Remove from local state immediately for better UX
+      setWebhooks(prev => prev.filter(w => w.id !== webhookId))
+      
+      // Then delete from server
       await fileMakerService.deleteWebhook(database.name, webhookId)
-      await loadWebhooks()
+      
+      // Optional: Reload to ensure server state is in sync
+      // loadWebhooks()
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to delete webhook')
+      // If deletion failed, reload the webhooks to restore the deleted item
+      loadWebhooks()
     }
   }
 
@@ -85,11 +93,32 @@ export function TabsPanel({ database }: TabsPanelProps) {
     setIsDialogOpen(true)
   }
 
-  const handleDialogClose = (success: boolean) => {
+  const handleDialogClose = (success: boolean, updateInfo?: { webhook: Webhook; oldId: string }) => {
     setIsDialogOpen(false)
     setEditingWebhook(undefined)
     if (success) {
-      loadWebhooks()
+      if (updateInfo) {
+        // Handle webhook update: mark old webhook as deleted and add new one
+        setWebhooks(prev => {
+          const oldWebhook = prev.find(w => w.id === updateInfo.oldId)
+          const otherWebhooks = prev.filter(w => w.id !== updateInfo.oldId)
+          
+          if (oldWebhook) {
+            // Mark old webhook as deleted and add new webhook
+            return [
+              ...otherWebhooks,
+              { ...oldWebhook, deleted: true },
+              updateInfo.webhook
+            ]
+          }
+          
+          // Fallback: just add the new webhook
+          return [...otherWebhooks, updateInfo.webhook]
+        })
+      } else {
+        // Handle webhook creation: reload from server
+        loadWebhooks()
+      }
     }
   }
 
@@ -197,15 +226,24 @@ export function TabsPanel({ database }: TabsPanelProps) {
                 {webhooks.map((webhook) => (
                   <div
                     key={webhook.id}
-                    className="border border-slate-200 rounded-lg p-4 hover:border-slate-300 transition-colors"
+                    className={`border rounded-lg p-4 transition-colors ${
+                      webhook.deleted 
+                        ? 'border-red-200 bg-red-50 opacity-60' 
+                        : 'border-slate-200 hover:border-slate-300'
+                    }`}
                   >
                     <div className="flex items-start justify-between">
                       <div className="flex-1 space-y-1">
                         <div className="flex items-center gap-2">
-                          <span className="font-mono text-sm text-slate-900">{webhook.webhook}</span>
+                          <span className={`font-mono text-sm ${webhook.deleted ? 'text-red-600 line-through' : 'text-slate-900'}`}>
+                            {webhook.webhook}
+                          </span>
                           <span className="text-xs bg-slate-100 px-2 py-1 rounded text-slate-600">
                             ID: {webhook.id}
                           </span>
+                          {webhook.deleted && (
+                            <span className="text-xs bg-red-100 px-2 py-1 rounded text-red-600">Deleted</span>
+                          )}
                         </div>
                         <div className="text-xs text-slate-500">
                           Database: {database.name} • Table: {webhook.tableName}
@@ -230,21 +268,24 @@ export function TabsPanel({ database }: TabsPanelProps) {
                       <div className="flex gap-2 ml-4">
                         <button
                           onClick={() => handleInvokeWebhook(webhook.id, webhook.tableName)}
-                          className="p-1.5 hover:bg-slate-100 rounded-md transition-colors"
+                          className="p-1.5 hover:bg-slate-100 rounded-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                           title="Test webhook"
+                          disabled={webhook.deleted}
                         >
                           <Play className="h-4 w-4 text-slate-600" />
                         </button>
                         <button
                           onClick={() => handleEditWebhook(webhook)}
-                          className="px-3 py-1.5 text-sm text-slate-700 hover:bg-slate-100 rounded-md transition-colors"
+                          className="px-3 py-1.5 text-sm text-slate-700 hover:bg-slate-100 rounded-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                          disabled={webhook.deleted}
                         >
                           Edit
                         </button>
                         <button
                           onClick={() => handleDeleteWebhook(webhook.id)}
-                          className="p-1.5 hover:bg-red-100 rounded-md transition-colors"
+                          className="p-1.5 hover:bg-red-100 rounded-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                           title="Delete webhook"
+                          disabled={webhook.deleted}
                         >
                           <Trash2 className="h-4 w-4 text-red-600" />
                         </button>

@@ -43,10 +43,18 @@ export function WebhookManager() {
     if (!confirm('Are you sure you want to delete this webhook?')) return
 
     try {
+      // Remove from local state immediately for better UX
+      setWebhooks(prev => prev.filter(w => w.id !== webhookId))
+      
+      // Then delete from server
       await fileMakerService.deleteWebhook(currentDatabase.name, webhookId)
-      await loadWebhooks()
+      
+      // Optional: Reload to ensure server state is in sync
+      // loadWebhooks()
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to delete webhook')
+      // If deletion failed, reload the webhooks to restore the deleted item
+      loadWebhooks()
     }
   }
 
@@ -71,11 +79,32 @@ export function WebhookManager() {
     setIsDialogOpen(true)
   }
 
-  const handleDialogClose = (success: boolean) => {
+  const handleDialogClose = (success: boolean, updateInfo?: { webhook: Webhook; oldId: string }) => {
     setIsDialogOpen(false)
     setEditingWebhook(undefined)
     if (success) {
-      loadWebhooks()
+      if (updateInfo) {
+        // Handle webhook update: mark old webhook as deleted and add new one
+        setWebhooks(prev => {
+          const oldWebhook = prev.find(w => w.id === updateInfo.oldId)
+          const otherWebhooks = prev.filter(w => w.id !== updateInfo.oldId)
+          
+          if (oldWebhook) {
+            // Mark old webhook as deleted and add new webhook
+            return [
+              ...otherWebhooks,
+              { ...oldWebhook, deleted: true },
+              updateInfo.webhook
+            ]
+          }
+          
+          // Fallback: just add the new webhook
+          return [...otherWebhooks, updateInfo.webhook]
+        })
+      } else {
+        // Handle webhook creation: reload from server
+        loadWebhooks()
+      }
     }
   }
 
@@ -132,14 +161,23 @@ export function WebhookManager() {
             {webhooks.map((webhook) => (
               <div
                 key={webhook.id}
-                className="border rounded-lg p-4 hover:border-slate-300 transition-colors"
+                className={`border rounded-lg p-4 transition-colors ${
+                  webhook.deleted 
+                    ? 'border-red-200 bg-red-50 opacity-60' 
+                    : 'hover:border-slate-300'
+                }`}
               >
                 <div className="flex items-start justify-between">
                   <div className="flex-1 space-y-2">
                     <div>
                       <div className="flex items-center gap-2">
-                        <div className="font-medium text-sm">{webhook.webhook}</div>
+                        <div className={`font-medium text-sm ${webhook.deleted ? 'text-red-600 line-through' : ''}`}>
+                          {webhook.webhook}
+                        </div>
                         <span className="text-xs bg-slate-100 px-2 py-1 rounded text-slate-600">ID: {webhook.id}</span>
+                        {webhook.deleted && (
+                          <span className="text-xs bg-red-100 px-2 py-1 rounded text-red-600">Deleted</span>
+                        )}
                       </div>
                       <div className="text-xs text-slate-500 mt-1">
                         Database: {currentDatabase?.name} • Table: {webhook.tableName}
@@ -168,6 +206,7 @@ export function WebhookManager() {
                       size="sm"
                       onClick={() => handleInvoke(webhook.id)}
                       title="Test webhook"
+                      disabled={webhook.deleted}
                     >
                       <Play className="h-3 w-3" />
                     </Button>
@@ -176,6 +215,7 @@ export function WebhookManager() {
                       size="sm"
                       onClick={() => handleEdit(webhook)}
                       title="Edit webhook"
+                      disabled={webhook.deleted}
                     >
                       Edit
                     </Button>
@@ -184,6 +224,7 @@ export function WebhookManager() {
                       size="sm"
                       onClick={() => handleDelete(webhook.id)}
                       title="Delete webhook"
+                      disabled={webhook.deleted}
                     >
                       <Trash2 className="h-3 w-3" />
                     </Button>

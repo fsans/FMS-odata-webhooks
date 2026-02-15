@@ -5,10 +5,6 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "backend": "node backend-server.js",
-    "proxy": "node proxy-server.js",
-    "dev:with-backend": "concurrently \"npm run backend\" \"npm run dev\"",
-    "dev:with-proxy": "concurrently \"npm run proxy\" \"npm run dev\"",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
     "preview": "vite preview"

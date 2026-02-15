@@ -53,24 +53,39 @@ npm run dev
 
 The app will be available at `http://localhost:5173`
 
+### SSL Certificate Setup
+
+**Before connecting to FileMaker Server, you must accept the SSL certificate:**
+
+1. Visit `https://your-filemaker-server/fmi/odata/v4` in your browser
+2. Accept the certificate warning (click "Advanced" → "Proceed to site")
+3. Return to the web app and connect normally
+
+This is required because FileMaker Servers typically use self-signed certificates.
+
 ### Building for Production
 
 ```bash
 # Create production build
 npm run build
 
-# Preview production build
-npm run preview
+# Deploy the dist/ folder to your web server
+# For example, symlink to nginx:
+# ln -s /path/to/project/dist /var/www/html/fmwebhooks
 ```
 
 ### Usage
 
-1. **Connect to FileMaker Server**
-   - Enter your FileMaker Server host (e.g., `server.example.com`)
+1. **Accept SSL Certificate** (one-time setup)
+   - Visit `https://your-filemaker-host/fmi/odata/v4` in browser
+   - Accept the certificate warning
+
+2. **Connect to FileMaker Server**
+   - Enter your FileMaker Server host (e.g., `192.168.0.24`)
    - Provide valid credentials with OData access
    - Click "Connect"
 
-2. **Browse Databases**
+3. **Browse Databases**
    - Select a database from the list
    - Explore tables and their field metadata
    - View field types and FileMaker-specific properties
@@ -102,6 +117,40 @@ $select=id
 ```
 
 This is a FileMaker-specific requirement. Failure to quote reserved field names will result in OData parsing errors.
+
+## Architecture
+
+This application uses a **hybrid connection architecture**:
+
+### Development Mode
+- **Frontend** (React/Vite) → **Vite Proxy** → **FileMaker Server**
+- Vite dev server handles CORS automatically
+- SSL certificate bypassing via proxy configuration
+- URLs: `/fmi/odata/v4` → `https://192.168.0.24/fmi/odata/v4`
+
+### Production Mode  
+- **Frontend** (Static files) → **FileMaker Server** (direct OData API calls)
+- Requires SSL certificate acceptance in browser
+- Direct HTTPS calls to FileMaker's OData API
+- URLs: `https://your-server/fmi/odata/v4`
+
+This approach provides:
+- ✅ Easy development with automatic CORS handling
+- ✅ Simple production deployment without backend dependencies
+- ✅ SSL certificate flexibility (proxy in dev, manual acceptance in prod)
+
+## Deployment Options
+
+### Development
+- `npm run dev` - Vite dev server at `http://localhost:5173`
+- Automatic proxy to FileMaker Server (handles CORS and SSL)
+- No manual certificate acceptance needed in development
+
+### Production
+- Build: `npm run build`
+- Deploy `dist/` folder to any web server (nginx, Apache, etc.)
+- Example nginx setup: symlink `dist/` to `/var/www/html/fmwebhooks`
+- Access at `http://your-server/fmwebhooks`
 
 ## Requirements
 

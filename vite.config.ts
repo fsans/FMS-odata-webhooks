@@ -20,5 +20,23 @@ export default defineConfig({
   server: isDev ? {
     port: 5173,
     strictPort: true,
+    proxy: {
+      '/fmi': {
+        target: 'https://192.168.0.24',
+        changeOrigin: true,
+        secure: false, // Allow self-signed certificates
+        configure: (proxy) => {
+          proxy.on('error', (err) => {
+            console.log('proxy error', err);
+          });
+          proxy.on('proxyReq', () => {
+            console.log('Sending request to the target');
+          });
+          proxy.on('proxyRes', (proxyRes) => {
+            console.log('Received response from the target:', proxyRes.statusCode);
+          });
+        },
+      }
+    }
   } : undefined,
 })

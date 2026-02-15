@@ -124,7 +124,7 @@ export function ConnectionForm({ onClose }: ConnectionFormProps) {
         <CardDescription>
           Enter your FileMaker Server host and database credentials. The username and password must be for an account that exists in your FileMaker database file(s) with the <strong>fmodata</strong> extended privilege enabled.
           <br />
-          <span className="text-xs text-amber-700 mt-2 block">⚠️ Make sure the backend server is running: <code className="bg-amber-100 px-1 rounded">npm run backend</code></span>
+          <span className="text-xs text-amber-700 mt-2 block">⚠️ <strong>Development Mode:</strong> Vite proxy handles SSL certificates automatically. For production deployment, users must accept SSL certificates manually.</span>
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -210,16 +210,25 @@ export function ConnectionForm({ onClose }: ConnectionFormProps) {
             <div className="text-sm text-red-600 bg-red-50 p-3 rounded-md border border-red-200">
               <p className="font-medium mb-2">Connection Error:</p>
               <p className="whitespace-pre-wrap mb-3">{error}</p>
-              {error.includes('SSL') && (
+              {error.includes('SSL') || error.includes('certificate') ? (
                 <div className="mt-3 pt-3 border-t border-red-200 text-xs">
-                  <p className="font-medium mb-1">Quick Fix for SSL Certificate:</p>
+                  <p className="font-medium mb-1">SSL Certificate Fix:</p>
                   <ol className="list-decimal list-inside space-y-1">
                     <li>Open <code className="bg-red-100 px-1 rounded">https://{host}/fmi/odata/v4</code> in your browser</li>
-                    <li>Accept the certificate warning</li>
+                    <li>Accept the certificate warning (click "Advanced" → "Proceed to site")</li>
                     <li>Return here and try connecting again</li>
                   </ol>
                 </div>
-              )}
+              ) : error.includes('Network') ? (
+                <div className="mt-3 pt-3 border-t border-red-200 text-xs">
+                  <p className="font-medium mb-1">Network Troubleshooting:</p>
+                  <ol className="list-decimal list-inside space-y-1">
+                    <li>Verify FileMaker Server is running at {host}</li>
+                    <li>Check network connectivity to the server</li>
+                    <li>Ensure OData API is enabled in FileMaker Server Admin Console</li>
+                  </ol>
+                </div>
+              ) : null}
             </div>
           )}
           <Button type="submit" disabled={isLoading}>

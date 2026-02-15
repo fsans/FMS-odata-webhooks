@@ -10,7 +10,6 @@ import type {
 
 class FileMakerService {
   private connection: FileMakerConnection | null = null
-  private backendUrl = '/api/filemaker'
 
   setConnection(connection: FileMakerConnection) {
     this.connection = connection
@@ -31,20 +30,15 @@ class FileMakerService {
     if (!this.connection) {
       throw new Error('No connection configured')
     }
-    const baseUrl = `https://${this.connection.host}/fmi/odata/v4`
+    // In development, use relative URL to go through Vite proxy
+    // In production, use direct URL
+    const isDev = import.meta.env.DEV
+    const baseUrl = isDev 
+      ? `/fmi/odata/v4`  // Will be proxied to https://192.168.0.24/fmi/odata/v4
+      : `https://${this.connection.host}/fmi/odata/v4`
     return database ? `${baseUrl}/${database}` : baseUrl
   }
 
-  private getBackendUrl(path: string): string {
-    if (!this.connection) {
-      throw new Error('No connection configured')
-    }
-    // Convert FileMaker URL to backend API path
-    // When using Nginx reverse proxy, just pass the path without host parameter
-    // Nginx is configured to proxy to the hardcoded FileMaker host
-    const url = new URL(path)
-    return `${this.backendUrl}${url.pathname}${url.search}`
-  }
 
   async testConnection(): Promise<boolean> {
     try {
@@ -59,11 +53,9 @@ class FileMakerService {
   async getDatabases(): Promise<Database[]> {
     try {
       const url = this.getBaseUrl()
-      const backendUrl = this.getBackendUrl(url)
       console.log('Fetching databases from:', url)
-      console.log('Via backend:', backendUrl)
 
-      const response = await fetch(backendUrl, {
+      const response = await fetch(url, {
         headers: {
           'Authorization': this.getAuthHeader(),
         },
@@ -80,7 +72,7 @@ class FileMakerService {
         } else if (response.status === 404) {
           throw new Error('OData API not found. Ensure FileMaker Server 22.0.4+ with OData enabled.')
         } else if (response.status === 0) {
-          throw new Error('Network error. Check server host and CORS settings.')
+          throw new Error('Network error. Check server host and ensure SSL certificate is accepted.')
         }
 
         throw new Error(`Failed to fetch databases: ${response.status} ${response.statusText}`)
@@ -94,7 +86,7 @@ class FileMakerService {
           `Cannot reach server at ${this.connection?.host}. This may be due to:\n` +
           `1. SSL Certificate Error: Visit https://${this.connection?.host}/fmi/odata/v4 in your browser and accept the certificate warning\n` +
           `2. Server not running or wrong hostname\n` +
-          `3. CORS restrictions\n\n` +
+          `3. SSL Certificate not accepted: Visit https://${this.connection?.host}/fmi/odata/v4 in your browser and accept the certificate warning\n\n` +
           `Error details: ${error.message}`
         )
       }
@@ -104,8 +96,7 @@ class FileMakerService {
 
   async getMetadata(database: string): Promise<TableMetadata[]> {
     const url = `${this.getBaseUrl(database)}/$metadata`
-    const backendUrl = this.getBackendUrl(url)
-    const response = await fetch(backendUrl, {
+    const response = await fetch(url, {
       headers: {
         'Authorization': this.getAuthHeader(),
       },
@@ -168,8 +159,7 @@ class FileMakerService {
 
   async getAllWebhooks(database: string): Promise<Webhook[]> {
     const url = `${this.getBaseUrl(database)}/Webhook.GetAll`
-    const backendUrl = this.getBackendUrl(url)
-    const response = await fetch(backendUrl, {
+    const response = await fetch(url, {
       method: 'GET',
       headers: {
         'Authorization': this.getAuthHeader(),
@@ -190,8 +180,7 @@ class FileMakerService {
 
   async createWebhook(database: string, params: WebhookCreateParams): Promise<Webhook> {
     const url = `${this.getBaseUrl(database)}/Webhook.Add`
-    const backendUrl = this.getBackendUrl(url)
-    const response = await fetch(backendUrl, {
+    const response = await fetch(url, {
       method: 'POST',
       headers: {
         'Authorization': this.getAuthHeader(),
@@ -206,22 +195,38 @@ class FileMakerService {
     }
 
     const data = await response.json()
-    return data
+    
+    // FileMaker only returns webhookID, so we need to construct the full webhook object
+    // from the parameters we sent
+    const webhookId = data.webhookResult?.webhookID || data.webhookID
+    
+    return {
+      id: String(webhookId),
+      webhook: params.webhook,
+      tableName: params.tableName,
+      notifySchemaChanges: params.notifySchemaChanges,
+      select: params.select,
+      filter: params.filter,
+      headers: params.headers,
+    }
   }
 
-  async updateWebhook(database: string, webhookId: string, params: WebhookCreateParams): Promise<Webhook> {
+  async updateWebhook(database: string, webhookId: string, params: WebhookCreateParams): Promise<{ webhook: Webhook; oldId: string }> {
     // FileMaker OData only supports: Add, Delete, Get, GetAll, Invoke
     // No native update operation exists, so we must delete and recreate
     // NOTE: This changes the webhook ID - FileMaker generates new sequential IDs
     // This means any external system referencing the old ID will break
+    const oldId = webhookId
+    
     await this.deleteWebhook(database, webhookId)
-    return this.createWebhook(database, params)
+    const newWebhook = await this.createWebhook(database, params)
+    
+    return { webhook: newWebhook, oldId }
   }
 
   async deleteWebhook(database: string, webhookId: string): Promise<void> {
     const url = `${this.getBaseUrl(database)}/Webhook.Delete(${webhookId})`
-    const backendUrl = this.getBackendUrl(url)
-    const response = await fetch(backendUrl, {
+    const response = await fetch(url, {
       method: 'POST',
       headers: {
         'Authorization': this.getAuthHeader(),
@@ -244,9 +249,8 @@ class FileMakerService {
         const baseUrl = `${this.getBaseUrl(database)}/${tableName}`
         const queryString = `$select="id"&$top=5`
         const fullUrl = `${baseUrl}?${queryString}`
-        const backendUrl = this.getBackendUrl(fullUrl)
-        console.log('Fetching record IDs from:', backendUrl)
-        const response = await fetch(backendUrl, {
+        console.log('Fetching record IDs from:', fullUrl)
+        const response = await fetch(fullUrl, {
           headers: {
             'Authorization': this.getAuthHeader(),
           },
@@ -278,11 +282,10 @@ class FileMakerService {
     }
 
     const url = `${this.getBaseUrl(database)}/Webhook.Invoke(${webhookId})`
-    const backendUrl = this.getBackendUrl(url)
     const bodyPayload = { rowIDs: rowIds }
     const bodyString = JSON.stringify(bodyPayload)
     console.log('Invoking webhook with body:', bodyString)
-    console.log('Backend URL:', backendUrl)
+    console.log('Direct URL:', url)
     console.log('Row IDs to invoke:', rowIds)
     
     const fetchOptions = {
@@ -295,7 +298,7 @@ class FileMakerService {
     }
     console.log('Fetch options:', fetchOptions)
     
-    const response = await fetch(backendUrl, fetchOptions)
+    const response = await fetch(url, fetchOptions)
 
     if (!response.ok) {
       const errorText = await response.text()
@@ -305,8 +308,7 @@ class FileMakerService {
 
   async executeScript(database: string, scriptName: string, parameter?: string | number | object): Promise<any> {
     const url = `${this.getBaseUrl(database)}/Script.${scriptName}`
-    const backendUrl = this.getBackendUrl(url)
-    const response = await fetch(backendUrl, {
+    const response = await fetch(url, {
       method: 'POST',
       headers: {
         'Authorization': this.getAuthHeader(),

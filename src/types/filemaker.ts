@@ -31,6 +31,7 @@ export interface Webhook {
   notifySchemaChanges: boolean
   select?: string
   filter?: string
+  deleted?: boolean // Flag to mark webhooks as deleted (soft delete)
 }
 
 export interface WebhookCreateParams {
