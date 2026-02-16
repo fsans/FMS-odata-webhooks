@@ -27,7 +27,7 @@ https://help.claris.com/en/odata-guide/content/webhook-option-invoke.html
 
 ## Filemaker odata metadata Documentation
 
-To explore the database schemas and metadata just use the specific endpoiuints deteiled here:
+To explore the database schemas and metadata just use the specific endpoints detailed here:
 
 https://help.claris.com/en/odata-guide/content/get-database-names.html
 https://help.claris.com/en/odata-guide/content/get-list-of-tables.html

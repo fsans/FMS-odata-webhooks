@@ -23,6 +23,15 @@ export interface TableMetadata {
   fields: FieldMetadata[]
 }
 
+export interface PendingOperation {
+  operation: 'ADD' | 'UPDATE' | 'DELETE' | 'SCHEMA'
+  rowIDs: number[]
+  status: 'NOT_SENT' | 'SENT' | 'FAILED'
+  lastErrorCode: number
+  lastErrorMessage: string
+  sendAttempts: number
+}
+
 export interface Webhook {
   id: string
   webhook: string
@@ -31,6 +40,7 @@ export interface Webhook {
   notifySchemaChanges: boolean
   select?: string
   filter?: string
+  pendingOperations?: PendingOperation[]
   deleted?: boolean // Flag to mark webhooks as deleted (soft delete)
 }
 

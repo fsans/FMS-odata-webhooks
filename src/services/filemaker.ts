@@ -7,6 +7,7 @@ import type {
   WebhookCreateParams,
   FieldMetadata,
 } from '@/types/filemaker'
+import { webhookTracker } from './webhookTracker'
 
 class FileMakerService {
   private connection: FileMakerConnection | null = null
@@ -158,56 +159,103 @@ class FileMakerService {
   }
 
   async getAllWebhooks(database: string): Promise<Webhook[]> {
+    const startTime = Date.now()
     const url = `${this.getBaseUrl(database)}/Webhook.GetAll`
-    const response = await fetch(url, {
+    const requestDetails = {
       method: 'GET',
       headers: {
         'Authorization': this.getAuthHeader(),
       },
-    })
+    }
+    
+    console.log('\n=== Webhook.GetAll Request ===')
+    console.log(`Sending request to: GET ${url}`)
+    console.log('Request headers:', { 'Content-Type': 'application/json' })
+    
+    const response = await fetch(url, requestDetails)
+    const timingMs = Date.now() - startTime
 
     if (!response.ok) {
+      console.error(`Received response: ${response.status} ${response.statusText}`)
       throw new Error(`Failed to fetch webhooks: ${response.statusText}`)
     }
 
     const data = await response.json()
+    console.log(`Received response: ${response.status}`)
+    console.log('Response data:', data)
+    console.log(`Timing: ${timingMs}ms\n`)
+    
     // Transform FileMaker's webhookID to id
-    return (data.webhooks || []).map((wh: any) => ({
-      ...wh,
-      id: String(wh.webhookID),
-    }))
+    const webhooks = (data.webhooks || []).map((wh: any) => {
+      const webhook = {
+        ...wh,
+        id: String(wh.webhookID),
+      }
+      console.log(`Webhook object before return:`, webhook)
+      if (webhook.pendingOperations && webhook.pendingOperations.length > 0) {
+        console.log(`Webhook ${webhook.id} has ${webhook.pendingOperations.length} pending operations:`, webhook.pendingOperations)
+      }
+      return webhook
+    })
+    console.log('Final webhooks array:', webhooks)
+    return webhooks
   }
 
   async createWebhook(database: string, params: WebhookCreateParams): Promise<Webhook> {
+    const startTime = Date.now()
     const url = `${this.getBaseUrl(database)}/Webhook.Add`
-    const response = await fetch(url, {
-      method: 'POST',
-      headers: {
-        'Authorization': this.getAuthHeader(),
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(params) || undefined,
-    })
-
-    if (!response.ok) {
-      const errorText = await response.text()
-      throw new Error(`Failed to create webhook: ${response.statusText} - ${errorText}`)
-    }
-
-    const data = await response.json()
     
-    // FileMaker only returns webhookID, so we need to construct the full webhook object
-    // from the parameters we sent
-    const webhookId = data.webhookResult?.webhookID || data.webhookID
-    
-    return {
-      id: String(webhookId),
-      webhook: params.webhook,
-      tableName: params.tableName,
-      notifySchemaChanges: params.notifySchemaChanges,
-      select: params.select,
-      filter: params.filter,
-      headers: params.headers,
+    try {
+      console.log('\n=== Webhook.Add Request ===')
+      console.log(`Sending request to: POST ${url}`)
+      console.log('Request body:', params)
+      
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: {
+          'Authorization': this.getAuthHeader(),
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(params) || undefined,
+      })
+
+      const timingMs = Date.now() - startTime
+      const data = await response.json()
+
+      if (!response.ok) {
+        const errorText = await response.text()
+        console.error(`Received response: ${response.status} ${response.statusText}`)
+        console.error('Error details:', errorText)
+        webhookTracker.trackError('create', database, `Failed to create webhook: ${response.statusText} - ${errorText}`)
+        throw new Error(`Failed to create webhook: ${response.statusText} - ${errorText}`)
+      }
+
+      console.log(`Received response: ${response.status}`)
+      console.log('Response data:', data)
+      console.log(`Timing: ${timingMs}ms\n`)
+
+      // FileMaker only returns webhookID, so we need to construct the full webhook object
+      // from the parameters we sent
+      const webhookId = data.webhookResult?.webhookID || data.webhookID
+      
+      const webhook = {
+        id: String(webhookId),
+        webhook: params.webhook,
+        tableName: params.tableName,
+        notifySchemaChanges: params.notifySchemaChanges,
+        select: params.select,
+        filter: params.filter,
+        headers: params.headers,
+      }
+
+      // Track the creation for analysis
+      webhookTracker.trackWebhookCreation(webhook, database, timingMs, data)
+
+      return webhook
+    } catch (error) {
+      const timingMs = Date.now() - startTime
+      webhookTracker.trackError('create', database, error instanceof Error ? error.message : 'Unknown error')
+      throw error
     }
   }
 
@@ -217,30 +265,66 @@ class FileMakerService {
     // NOTE: This changes the webhook ID - FileMaker generates new sequential IDs
     // This means any external system referencing the old ID will break
     const oldId = webhookId
+    const startTime = Date.now()
     
-    await this.deleteWebhook(database, webhookId)
-    const newWebhook = await this.createWebhook(database, params)
-    
-    return { webhook: newWebhook, oldId }
+    try {
+      await this.deleteWebhook(database, webhookId)
+      const newWebhook = await this.createWebhook(database, params)
+      const timingMs = Date.now() - startTime
+      
+      // Track the update for analysis
+      webhookTracker.trackWebhookUpdate(oldId, newWebhook, database, timingMs)
+      
+      return { webhook: newWebhook, oldId }
+    } catch (error) {
+      const timingMs = Date.now() - startTime
+      webhookTracker.trackError('update', database, error instanceof Error ? error.message : 'Unknown error', webhookId)
+      throw error
+    }
   }
 
   async deleteWebhook(database: string, webhookId: string): Promise<void> {
+    const startTime = Date.now()
     const url = `${this.getBaseUrl(database)}/Webhook.Delete(${webhookId})`
-    const response = await fetch(url, {
-      method: 'POST',
-      headers: {
-        'Authorization': this.getAuthHeader(),
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({}),
-    })
+    
+    try {
+      console.log('\n=== Webhook.Delete Request ===')
+      console.log(`Sending request to: POST ${url}`)
+      console.log('Request body:', { webhookId })
+      
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: {
+          'Authorization': this.getAuthHeader(),
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({}),
+      })
 
-    if (!response.ok) {
-      throw new Error(`Failed to delete webhook: ${response.statusText}`)
+      const timingMs = Date.now() - startTime
+
+      if (!response.ok) {
+        const errorText = await response.text()
+        console.error(`Received response: ${response.status} ${response.statusText}`)
+        console.error('Error details:', errorText)
+        webhookTracker.trackError('delete', database, `Failed to delete webhook: ${response.statusText} - ${errorText}`, webhookId)
+        throw new Error(`Failed to delete webhook: ${response.statusText}`)
+      }
+
+      console.log(`Received response: ${response.status}`)
+      console.log(`Timing: ${timingMs}ms\n`)
+      
+      // Track the deletion for analysis
+      webhookTracker.trackWebhookDeletion(webhookId, database, timingMs)
+    } catch (error) {
+      const timingMs = Date.now() - startTime
+      webhookTracker.trackError('delete', database, error instanceof Error ? error.message : 'Unknown error', webhookId)
+      throw error
     }
   }
 
   async invokeWebhook(database: string, webhookId: string, tableName?: string): Promise<void> {
+    const startTime = Date.now()
     let rowIds: number[] = []
 
     // If tableName is provided, fetch sample record IDs from that table
@@ -249,7 +333,6 @@ class FileMakerService {
         const baseUrl = `${this.getBaseUrl(database)}/${tableName}`
         const queryString = `$select="id"&$top=5`
         const fullUrl = `${baseUrl}?${queryString}`
-        console.log('Fetching record IDs from:', fullUrl)
         const response = await fetch(fullUrl, {
           headers: {
             'Authorization': this.getAuthHeader(),
@@ -258,17 +341,10 @@ class FileMakerService {
 
         if (response.ok) {
           const data = await response.json()
-          console.log('Fetched data:', data)
           // Extract record IDs from the response
           if (data.value && Array.isArray(data.value)) {
             rowIds = data.value.map((record: any) => record.id).filter((id: any) => id !== undefined)
-            console.log('Extracted row IDs:', rowIds)
-          } else {
-            console.warn('No records found in response or invalid format')
           }
-        } else {
-          const errorText = await response.text()
-          console.warn(`Failed to fetch record IDs, status: ${response.status}, error: ${errorText}`)
         }
       } catch (err) {
         console.warn('Failed to fetch record IDs, using default:', err)
@@ -277,16 +353,16 @@ class FileMakerService {
 
     // If we couldn't fetch any IDs, use a default
     if (rowIds.length === 0) {
-      console.log('No row IDs found, using default [1]')
       rowIds = [1]
     }
 
     const url = `${this.getBaseUrl(database)}/Webhook.Invoke(${webhookId})`
     const bodyPayload = { rowIDs: rowIds }
     const bodyString = JSON.stringify(bodyPayload)
-    console.log('Invoking webhook with body:', bodyString)
-    console.log('Direct URL:', url)
-    console.log('Row IDs to invoke:', rowIds)
+    
+    console.log('\n=== Webhook.Invoke Request ===')
+    console.log(`Sending request to: POST ${url}`)
+    console.log('Request body:', bodyPayload)
     
     const fetchOptions = {
       method: 'POST',
@@ -296,14 +372,19 @@ class FileMakerService {
       },
       body: bodyString,
     }
-    console.log('Fetch options:', fetchOptions)
     
     const response = await fetch(url, fetchOptions)
+    const timingMs = Date.now() - startTime
 
     if (!response.ok) {
       const errorText = await response.text()
+      console.error(`Received response: ${response.status} ${response.statusText}`)
+      console.error('Error details:', errorText)
       throw new Error(`Failed to invoke webhook: ${response.statusText} - ${errorText}`)
     }
+    
+    console.log(`Received response: ${response.status}`)
+    console.log(`Timing: ${timingMs}ms\n`)
   }
 
   async executeScript(database: string, scriptName: string, parameter?: string | number | object): Promise<any> {

@@ -4,6 +4,9 @@ import type { Database, TableMetadata } from '@/types/filemaker'
 import { Table, ChevronDown, ChevronRight, Plus, RefreshCw, Play, Trash2 } from 'lucide-react'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { WebhookDialog } from './WebhookDialog'
+import WebhookIdResearchPanel from './WebhookIdResearchPanel'
+import { PendingOperationsPanel } from './PendingOperationsPanel'
+import { WebhookDebug } from './WebhookDebug'
 import type { Webhook } from '@/types/filemaker'
 
 interface TabsPanelProps {
@@ -11,7 +14,7 @@ interface TabsPanelProps {
 }
 
 export function TabsPanel({ database }: TabsPanelProps) {
-  const [activeTab, setActiveTab] = useState<'tables' | 'webhooks'>('tables')
+  const [activeTab, setActiveTab] = useState<'tables' | 'webhooks' | 'research'>('tables')
   const [tables, setTables] = useState<TableMetadata[]>([])
   const [webhooks, setWebhooks] = useState<Webhook[]>([])
   const [isLoadingTables, setIsLoadingTables] = useState(false)
@@ -24,7 +27,7 @@ export function TabsPanel({ database }: TabsPanelProps) {
   useEffect(() => {
     if (activeTab === 'tables') {
       loadTables()
-    } else {
+    } else if (activeTab === 'webhooks') {
       loadWebhooks()
     }
   }, [activeTab, database])
@@ -124,10 +127,11 @@ export function TabsPanel({ database }: TabsPanelProps) {
 
   return (
     <div className="flex flex-col h-full">
-      <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as 'tables' | 'webhooks')} className="flex flex-col h-full">
+      <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as 'tables' | 'webhooks' | 'research')} className="flex flex-col h-full">
         <TabsList variant="line" className="px-6 py-0 rounded-none border-b border-slate-200 w-full justify-start">
           <TabsTrigger value="tables">Tables</TabsTrigger>
           <TabsTrigger value="webhooks">Webhooks</TabsTrigger>
+          <TabsTrigger value="research">ID Research</TabsTrigger>
         </TabsList>
 
         <div className="flex-1 overflow-y-auto">
@@ -264,6 +268,8 @@ export function TabsPanel({ database }: TabsPanelProps) {
                             Custom headers: {Object.keys(webhook.headers).join(', ')}
                           </div>
                         )}
+                        <PendingOperationsPanel operations={webhook.pendingOperations || []} />
+                        <WebhookDebug webhook={webhook} />
                       </div>
                       <div className="flex gap-2 ml-4">
                         <button
@@ -295,6 +301,10 @@ export function TabsPanel({ database }: TabsPanelProps) {
                 ))}
               </div>
             )}
+          </TabsContent>
+
+          <TabsContent value="research" className="m-0 p-0">
+            <WebhookIdResearchPanel />
           </TabsContent>
         </div>
       </Tabs>

@@ -4,6 +4,8 @@ import { fileMakerService } from '@/services/filemaker'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { WebhookDialog } from './WebhookDialog'
+import { PendingOperationsPanel } from './PendingOperationsPanel'
+import { WebhookDebug } from './WebhookDebug'
 import type { Webhook } from '@/types/filemaker'
 import { Webhook as WebhookIcon, Plus, Trash2, Play, RefreshCw } from 'lucide-react'
 
@@ -158,7 +160,8 @@ export function WebhookManager() {
           </div>
         ) : (
           <div className="space-y-3">
-            {webhooks.map((webhook) => (
+            {webhooks.map((webhook) => {
+              return (
               <div
                 key={webhook.id}
                 className={`border rounded-lg p-4 transition-colors ${
@@ -198,6 +201,8 @@ export function WebhookManager() {
                           Custom headers: {Object.keys(webhook.headers).join(', ')}
                         </div>
                       )}
+                      <PendingOperationsPanel operations={webhook.pendingOperations || []} />
+                      <WebhookDebug webhook={webhook} />
                     </div>
                   </div>
                   <div className="flex gap-2 ml-4">
@@ -231,7 +236,8 @@ export function WebhookManager() {
                   </div>
                 </div>
               </div>
-            ))}
+              )
+            })}
           </div>
         )}
 

@@ -18,6 +18,9 @@ This application provides a user-friendly interface to browse FileMaker database
 - [AUTHENTICATION.md](AUTHENTICATION.md) - **Authentication guide and troubleshooting**
 - [CLAUDE.md](CLAUDE.md) - Comprehensive development guide and API documentation
 - [PROJECT_STRUCTURE.md](PROJECT_STRUCTURE.md) - Code structure and architecture
+- [DISCOVERINGS.md](DISCOVERINGS.md) - **Verified findings about FileMaker OData webhooks**
+- [ENDPOINT_TESTING_GUIDE.md](ENDPOINT_TESTING_GUIDE.md) - **Complete endpoint testing documentation**
+- [QUICK_START_TESTING.md](QUICK_START_TESTING.md) - **Quick reference for testing endpoints**
 - [Initial Prompt](initial-prompt.md) - Project requirements and specifications
 
 ## Articles
@@ -102,6 +105,32 @@ npm run build
    - Test webhooks using the Play button
    - Delete webhooks when no longer needed
 
+## Testing Endpoints
+
+The application includes comprehensive endpoint testing utilities available in the browser console:
+
+```javascript
+// Quick connectivity test
+await window.FileMakerTests.quickTest('DatabaseName')
+
+// Full endpoint validation (tests all HTTP methods)
+await window.FileMakerTests.validateAllEndpoints('DatabaseName')
+
+// Create a test webhook
+const webhook = await window.FileMakerTests.testCreateWebhook('DatabaseName', 'TableName')
+
+// Invoke/test a webhook
+await window.FileMakerTests.testInvokeWebhook('DatabaseName', webhookId, 'TableName')
+
+// Delete a webhook
+await window.FileMakerTests.testDeleteWebhook('DatabaseName', webhookId)
+
+// Full integration test (create → list → delete)
+await window.FileMakerTests.fullIntegrationTest('DatabaseName', 'TableName')
+```
+
+See [QUICK_START_TESTING.md](QUICK_START_TESTING.md) for detailed testing instructions.
+
 ## ⚠️ Important: Reserved Field Names in OData Queries
 
 **The `id` field is a reserved word in FileMaker OData and MUST be quoted in `$select` parameters.**
@@ -151,6 +180,35 @@ This approach provides:
 - Deploy `dist/` folder to any web server (nginx, Apache, etc.)
 - Example nginx setup: symlink `dist/` to `/var/www/html/fmwebhooks`
 - Access at `http://your-server/fmwebhooks`
+
+## Verified Findings
+
+### HTTP Methods
+✅ **Only POST is supported** for all webhook operations (verified through systematic testing)
+- `POST /Webhook.GetAll` - List webhooks
+- `POST /Webhook.Add` - Create webhook
+- `POST /Webhook.Get` - Get specific webhook
+- `POST /Webhook.Delete` - Delete webhook
+- `POST /Webhook.Invoke` - Test/trigger webhook
+
+❌ GET, PUT, PATCH, DELETE methods are NOT supported
+
+### Webhook Persistence
+✅ **Webhooks persist across server restarts** - Confirmed through testing with `Webhook.GetAll`
+
+### Webhook Updates
+⚠️ **No native update operation** - Use delete + create pattern:
+1. Delete old webhook with `POST /Webhook.Delete`
+2. Create new webhook with `POST /Webhook.Add`
+3. Update external references (new webhook gets new ID)
+
+### Webhook IDs
+- Sequentially generated integers (1, 2, 3, etc.)
+- Unique per webhook
+- Cannot be set manually
+- Not reused after deletion
+
+See [DISCOVERINGS.md](DISCOVERINGS.md) for complete verified findings.
 
 ## Requirements
 
