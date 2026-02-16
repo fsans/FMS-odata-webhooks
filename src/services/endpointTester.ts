@@ -7,6 +7,7 @@ interface EndpointTestResult {
   status: number
   statusText: string
   supported: boolean
+  unsupportedReason?: string
   error?: string
   response?: any
 }
@@ -64,7 +65,6 @@ class EndpointTester {
       })
 
       let responseData: any
-      let error: string | undefined
 
       try {
         const text = await response.text()
@@ -90,7 +90,7 @@ class EndpointTester {
         status: response.status,
         statusText: response.statusText,
         supported,
-        error: supported ? undefined : this.getUnsupportedReason(response.status, responseData, method),
+        unsupportedReason: supported ? undefined : this.getUnsupportedReason(response.status, responseData),
         response: responseData
       }
 
@@ -181,7 +181,7 @@ class EndpointTester {
     return false
   }
 
-  private getUnsupportedReason(status: number, response: any, method: string): string {
+  private getUnsupportedReason(status: number, response: any): string {
     if (status === 405) {
       return 'Method Not Allowed - HTTP 405'
     }

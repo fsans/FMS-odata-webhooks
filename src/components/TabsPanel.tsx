@@ -141,42 +141,42 @@ export function TabsPanel({ database }: TabsPanelProps) {
             </div>
           )}
 
-          <TabsContent value="tables" className="m-0 p-6">
-            <h3 className="text-sm font-semibold text-slate-900 mb-4">
+          <TabsContent value="tables" className="m-0 p-4">
+            <h3 className="text-xs font-semibold text-slate-900 mb-2">
               Tables in {database.name}
             </h3>
             {isLoadingTables ? (
-              <p className="text-sm text-slate-500">Loading tables...</p>
+              <p className="text-xs text-slate-500">Loading tables...</p>
             ) : tables.length === 0 ? (
-              <p className="text-sm text-slate-500">No tables found</p>
+              <p className="text-xs text-slate-500">No tables found</p>
             ) : (
-              <div className="space-y-2">
+              <div className="space-y-1">
                 {tables.map((table) => (
-                  <div key={table.name} className="border border-slate-200 rounded-lg overflow-hidden">
+                  <div key={table.name} className="border border-slate-200 rounded overflow-hidden">
                     <button
                       onClick={() => setExpandedTable(expandedTable === table.name ? null : table.name)}
-                      className="w-full flex items-center justify-between px-4 py-3 hover:bg-slate-50 transition-colors"
+                      className="w-full flex items-center justify-between px-3 py-2 hover:bg-slate-50 transition-colors"
                     >
-                      <span className="flex items-center gap-2 text-sm font-medium text-slate-900">
-                        <Table className="h-4 w-4" />
+                      <span className="flex items-center gap-1.5 text-xs font-medium text-slate-900">
+                        <Table className="h-3 w-3" />
                         {table.name}
                         <span className="text-xs text-slate-500 font-normal">
                           ({table.fields.length} fields)
                         </span>
                       </span>
                       {expandedTable === table.name ? (
-                        <ChevronDown className="h-4 w-4 text-slate-400" />
+                        <ChevronDown className="h-3 w-3 text-slate-400" />
                       ) : (
-                        <ChevronRight className="h-4 w-4 text-slate-400" />
+                        <ChevronRight className="h-3 w-3 text-slate-400" />
                       )}
                     </button>
                     {expandedTable === table.name && (
-                      <div className="border-t border-slate-200 bg-slate-50 px-4 py-3">
-                        <div className="space-y-2">
+                      <div className="border-t border-slate-200 bg-slate-50 px-3 py-2">
+                        <div className="space-y-1">
                           {table.fields.map((field) => (
                             <div
                               key={field.name}
-                              className="flex items-center justify-between text-sm py-1"
+                              className="flex items-center justify-between text-xs py-0.5"
                             >
                               <span className="font-mono text-slate-700">{field.name}</span>
                               <span className="text-xs text-slate-500">

@@ -1,7 +1,6 @@
 import { webhookTracker } from './webhookTracker'
 import { webhookTestFramework } from './webhookTestFramework'
 import { patternAnalyzer } from './patternAnalyzer'
-import type { WebhookOperationLog, IdAnalysisResult } from '@/types/webhook-tracking'
 
 interface DocumentationSection {
   title: string

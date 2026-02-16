@@ -31,12 +31,8 @@ class FileMakerService {
     if (!this.connection) {
       throw new Error('No connection configured')
     }
-    // In development, use relative URL to go through Vite proxy
-    // In production, use direct URL
-    const isDev = import.meta.env.DEV
-    const baseUrl = isDev 
-      ? `/fmi/odata/v4`  // Will be proxied to https://192.168.0.24/fmi/odata/v4
-      : `https://${this.connection.host}/fmi/odata/v4`
+    // Always use relative URL (proxied by dev server or nginx)
+    const baseUrl = `/fmi/odata/v4`
     return database ? `${baseUrl}/${database}` : baseUrl
   }
 
@@ -253,7 +249,6 @@ class FileMakerService {
 
       return webhook
     } catch (error) {
-      const timingMs = Date.now() - startTime
       webhookTracker.trackError('create', database, error instanceof Error ? error.message : 'Unknown error')
       throw error
     }
@@ -277,7 +272,6 @@ class FileMakerService {
       
       return { webhook: newWebhook, oldId }
     } catch (error) {
-      const timingMs = Date.now() - startTime
       webhookTracker.trackError('update', database, error instanceof Error ? error.message : 'Unknown error', webhookId)
       throw error
     }
@@ -317,7 +311,6 @@ class FileMakerService {
       // Track the deletion for analysis
       webhookTracker.trackWebhookDeletion(webhookId, database, timingMs)
     } catch (error) {
-      const timingMs = Date.now() - startTime
       webhookTracker.trackError('delete', database, error instanceof Error ? error.message : 'Unknown error', webhookId)
       throw error
     }
