@@ -32,13 +32,6 @@ This application provides a user-friendly interface to browse FileMaker database
 - [ENDPOINT_TESTING_GUIDE.md](ENDPOINT_TESTING_GUIDE.md) - **Complete endpoint testing documentation**
 - [QUICK_START_TESTING.md](QUICK_START_TESTING.md) - **Quick reference for testing endpoints**
 
-## Articles
-
-This repository includes several articles about FileMaker webhooks:
-
-- [Medium Article (Conversational)](docs/medium-article-conversational.md) - Published version
-- [Medium Article (Short)](docs/medium-article-short.md) - Condensed version
-- [Medium Article (Full)](docs/medium-article.md) - Complete original version
 
 ## Tech Stack
 
