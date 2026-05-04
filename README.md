@@ -1,6 +1,6 @@
 # FileMaker OData Webhooks Manager
 
-[![Version](https://img.shields.io/badge/version-1.0.6-blue.svg)](https://github.com/fsans/FMS-odata-webhooks/releases)
+[![Version](https://img.shields.io/badge/version-1.0.7-blue.svg)](https://github.com/fsans/FMS-odata-webhooks/releases)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![nBCN Software](https://img.shields.io/badge/nBCN_Software-Barcelona-lightgrey.svg)](https://ntwk.es)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.6-3178c6.svg?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
@@ -12,6 +12,8 @@
 A React web application for managing FileMaker Server webhooks via the OData API.
 
 ## Overview
+
+![alt text](<Screenshot 2026-05-04 at 13.22.47.png>)
 
 This application provides a user-friendly interface to browse FileMaker databases, tables, and fields, then configure webhooks with filters and callbacks to FileMaker scripts. Built with React, Vite, Tailwind CSS, and shadcn/ui components.
 
