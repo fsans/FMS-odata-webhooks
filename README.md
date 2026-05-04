@@ -1,5 +1,13 @@
 # FileMaker OData Webhooks Manager
 
+[![Version](https://img.shields.io/badge/version-1.0.6-blue.svg)](https://github.com/fsans/FMS-odata-webhooks/releases)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.6-3178c6.svg?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
+[![React](https://img.shields.io/badge/React-18-61dafb.svg?logo=react&logoColor=white)](https://react.dev/)
+[![Vite](https://img.shields.io/badge/Vite-6-646cff.svg?logo=vite&logoColor=white)](https://vitejs.dev/)
+[![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-3-38bdf8.svg?logo=tailwindcss&logoColor=white)](https://tailwindcss.com/)
+[![FileMaker Server](https://img.shields.io/badge/FileMaker_Server-22.0.4+-green.svg)](https://www.claris.com/filemaker/)
+
 A React web application for managing FileMaker Server webhooks via the OData API.
 
 ## Overview
@@ -220,7 +228,7 @@ See [DISCOVERINGS.md](DISCOVERINGS.md) for complete verified findings.
 
 ## License
 
-TBD
+MIT License — see [LICENSE](LICENSE) for details.
 
 ## Contributing
 
