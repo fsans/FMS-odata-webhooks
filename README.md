@@ -15,11 +15,11 @@ This application provides a user-friendly interface to browse FileMaker database
 
 ## Documentation
 
-- [AUTHENTICATION.md](docs/AUTHENTICATION.md) - **Authentication guide and troubleshooting**
-- [PROJECT_STRUCTURE.md](docs/PROJECT_STRUCTURE.md) - Code structure and architecture
-- [DISCOVERINGS.md](docs/DISCOVERINGS.md) - **Verified findings about FileMaker OData webhooks**
-- [ENDPOINT_TESTING_GUIDE.md](docs/ENDPOINT_TESTING_GUIDE.md) - **Complete endpoint testing documentation**
-- [QUICK_START_TESTING.md](docs/QUICK_START_TESTING.md) - **Quick reference for testing endpoints**
+- [AUTHENTICATION.md](AUTHENTICATION.md) - **Authentication guide and troubleshooting**
+- [PROJECT_STRUCTURE.md](PROJECT_STRUCTURE.md) - Code structure and architecture
+- [DISCOVERINGS.md](DISCOVERINGS.md) - **Verified findings about FileMaker OData webhooks**
+- [ENDPOINT_TESTING_GUIDE.md](ENDPOINT_TESTING_GUIDE.md) - **Complete endpoint testing documentation**
+- [QUICK_START_TESTING.md](QUICK_START_TESTING.md) - **Quick reference for testing endpoints**
 
 ## Articles
 
@@ -130,7 +130,7 @@ await window.FileMakerTests.testDeleteWebhook('DatabaseName', webhookId)
 await window.FileMakerTests.fullIntegrationTest('DatabaseName', 'TableName')
 ```
 
-See [QUICK_START_TESTING.md](docs/QUICK_START_TESTING.md) for detailed testing instructions.
+See [QUICK_START_TESTING.md](QUICK_START_TESTING.md) for detailed testing instructions.
 
 ## ⚠️ Important: Reserved Field Names in OData Queries
 
@@ -209,7 +209,7 @@ This approach provides:
 - Cannot be set manually
 - Not reused after deletion
 
-See [DISCOVERINGS.md](docs/DISCOVERINGS.md) for complete verified findings.
+See [DISCOVERINGS.md](DISCOVERINGS.md) for complete verified findings.
 
 ## Requirements
 
