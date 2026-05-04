@@ -73,20 +73,28 @@ await window.FileMakerTests.validateAllEndpoints('MyDatabase')
 
 ## Supported Methods
 
-- ✅ Webhook.GetAll: POST
-- ✅ Webhook.Add: POST
-- ✅ Webhook.Get: POST
-- ✅ Webhook.Delete: POST
-- ✅ Webhook.Invoke: POST
+- ✅ Webhook.GetAll:        GET
+- ✅ Webhook.Get(<id>):     GET
+- ✅ Webhook.Add:           POST
+- ✅ Webhook.Delete(<id>):  POST
+- ✅ Webhook.Invoke(<id>):  POST
 
 ## Unsupported Methods
 
-- ❌ Webhook.GetAll: GET
-- ❌ Webhook.GetAll: PUT
-- ❌ Webhook.GetAll: PATCH
-- ❌ Webhook.GetAll: DELETE
-[... more unsupported methods ...]
+- ❌ Webhook.GetAll: PUT, PATCH
+- ❌ Webhook.Add:    PUT, PATCH
+- ❌ REST-style `DELETE /Webhook/<id>` (use `POST /Webhook.Delete(<id>)`)
+- [... etc ...]
 ```
+
+Note: the validator's notion of "supported" is *the server didn't return
+404/405 for that method on that endpoint*. A `400 Bad Request` (e.g.
+because the validator sent a probe with an empty body) is treated as
+"method exists". So if you see something like `POST Webhook.GetAll:
+supported (400)` in the report, that's the validator detecting that the
+path exists — not a contradiction with the table at the top of this
+guide. The authoritative method per endpoint is in that table; in real
+use, `Webhook.GetAll` should be called with `GET`.
 
 ### Scenario 3: Full Integration Test
 **Time:** 2-5 minutes  
@@ -185,14 +193,20 @@ await window.FileMakerTests.testDeleteWebhook('MyDatabase', webhook.id)
 ### What This Means
 
 **If you see:**
-- ✅ POST methods supported, ❌ GET/PUT/PATCH/DELETE unsupported
-  - **Correct!** This is expected behavior
+- ✅ `GET /Webhook.GetAll` and `GET /Webhook.Get(<id>)` supported,
+  ✅ `POST /Webhook.Add`, `POST /Webhook.Delete(<id>)`,
+  `POST /Webhook.Invoke(<id>)` supported, ❌ `PUT`/`PATCH` unsupported
+  - **Correct!** This is the expected behavior.
 
 - ❌ All methods unsupported
-  - **Problem:** Endpoint doesn't exist or connection issue
+  - **Problem:** the endpoint doesn't exist (likely a connectivity
+    issue or wrong database name).
 
-- ✅ GET supported, ❌ POST unsupported
-  - **Unexpected:** Verify endpoint name and FileMaker version
+- ✅ `POST /Webhook.GetAll` reported as supported with status 400/415
+  - **Expected validator artefact:** the validator probe sends an
+    invalid body, FMS returns 400, and the validator interprets that
+    as "the method exists". In real use, `Webhook.GetAll` should be
+    called with `GET`.
 
 ---
 
