@@ -1,96 +1,143 @@
 # Project Structure
 
-This document outlines the structure of the FileMaker OData Webhooks Manager application.
+This document outlines the structure of the FileMaker OData Webhooks
+Manager application.
 
 ## Directory Structure
 
 ```
 FMS-odata-webhooks/
-├── public/                     # Static assets
-│   └── vite.svg               # App icon
+├── public/                          # Static assets served as-is
+│   └── vite.svg                     # App icon
 ├── src/
-│   ├── components/            # React components
-│   │   ├── ui/               # shadcn/ui components
+│   ├── components/
+│   │   ├── ui/                      # shadcn/ui primitives
+│   │   │   ├── alert.tsx
+│   │   │   ├── badge.tsx
 │   │   │   ├── button.tsx
 │   │   │   ├── card.tsx
 │   │   │   ├── checkbox.tsx
 │   │   │   ├── dialog.tsx
 │   │   │   ├── input.tsx
 │   │   │   ├── label.tsx
+│   │   │   ├── progress.tsx
+│   │   │   ├── scroll-area.tsx
+│   │   │   ├── tabs.tsx
 │   │   │   └── textarea.tsx
-│   │   ├── ConnectionForm.tsx    # FileMaker Server connection
-│   │   ├── DatabaseBrowser.tsx   # Database/table browser
-│   │   ├── WebhookDialog.tsx     # Create/Edit webhook dialog
-│   │   └── WebhookManager.tsx    # Webhook list and management
+│   │   ├── ConnectionForm.tsx       # FileMaker Server connection form
+│   │   ├── DatabaseBrowser.tsx      # Database / table / field browser
+│   │   ├── HeaderContent.tsx        # Top app-bar header
+│   │   ├── HostSelector.tsx         # Host picker (saved servers)
+│   │   ├── InfoDrawer.tsx           # Slide-out info / help drawer
+│   │   ├── LoginDialog.tsx          # Login modal (host + creds)
+│   │   ├── MainLayout.tsx           # Top-level layout / shell
+│   │   ├── PendingOperationsPanel.tsx  # Renders webhook.pendingOperations[]
+│   │   ├── TabsExample.tsx          # Tabs primitive demo
+│   │   ├── TabsPanel.tsx            # Tab container used by WebhookManager
+│   │   ├── WebhookDebug.tsx         # Inline raw-webhook debug viewer
+│   │   ├── WebhookDialog.tsx        # Create / edit webhook modal
+│   │   ├── WebhookIdResearchPanel.tsx  # Research / diagnostics panel
+│   │   └── WebhookManager.tsx       # Webhook list + manage UI
 │   ├── contexts/
-│   │   └── FileMakerContext.tsx  # Global FileMaker state
+│   │   └── FileMakerContext.tsx     # Global connection / db / table state
 │   ├── lib/
-│   │   └── utils.ts              # Utility functions (cn)
+│   │   └── utils.ts                 # `cn(...)` and other utilities
 │   ├── services/
-│   │   └── filemaker.ts          # FileMaker OData API service
+│   │   ├── documentationGenerator.ts  # Self-documenting API examples
+│   │   ├── endpointTester.ts        # Legacy endpoint tester (deprecated)
+│   │   ├── endpointValidator.ts     # Systematic GET/POST/PUT/PATCH/DELETE probe
+│   │   ├── filemaker.ts             # Core OData client (used by all UI)
+│   │   ├── patternAnalyzer.ts       # Heuristic webhook pattern analysis
+│   │   ├── testEndpointsUtil.ts     # window.FileMakerTests.* utilities
+│   │   ├── webhookTestFramework.ts  # Older test scaffolding (deprecated)
+│   │   └── webhookTracker.ts        # In-memory tracking of webhook activity
 │   ├── types/
-│   │   └── filemaker.ts          # TypeScript type definitions
-│   ├── App.tsx                   # Main app component
-│   ├── index.css                 # Tailwind directives
-│   ├── main.tsx                  # App entry point
-│   └── vite-env.d.ts            # Vite type definitions
-├── index.html                    # HTML template
-├── package.json                  # Dependencies and scripts
-├── tsconfig.json                 # TypeScript configuration
-├── tsconfig.app.json            # App-specific TypeScript config
-├── tsconfig.node.json           # Node-specific TypeScript config
-├── vite.config.ts               # Vite configuration
-├── tailwind.config.js           # Tailwind CSS configuration
-├── postcss.config.js            # PostCSS configuration
-├── eslint.config.js             # ESLint configuration
-├── .gitignore                   # Git ignore rules
-├── CLAUDE.md                    # Development guide
-└── README.md                    # Project documentation
+│   │   ├── filemaker.ts             # Core types (Webhook, PendingOperation, …)
+│   │   └── webhook-tracking.ts      # Types for webhookTracker
+│   ├── App.tsx                      # Main app component
+│   ├── index.css                    # Tailwind directives + global CSS
+│   ├── main.tsx                     # App entry point
+│   └── vite-env.d.ts                # Vite type definitions
+├── docs/                            # Private docs submodule (see docs/README.md)
+├── index.html                       # HTML template
+├── package.json                     # Dependencies and scripts
+├── tsconfig.json / tsconfig.app.json / tsconfig.node.json
+├── vite.config.ts                   # Vite configuration (incl. /fmi proxy)
+├── tailwind.config.js               # Tailwind CSS configuration
+├── postcss.config.js                # PostCSS configuration
+├── eslint.config.js                 # ESLint configuration
+├── nginx-reverse-proxy.conf         # Standalone reverse-proxy snippet
+├── nginx-integration-snippet.conf   # Drop-in snippet for an existing nginx
+├── AUTHENTICATION.md                # Auth guide and troubleshooting
+├── DISCOVERINGS.md                  # Undocumented OData findings
+├── ENDPOINT_TESTING_GUIDE.md        # Reference for the endpoint validator
+├── QUICK_START_TESTING.md           # Browser-console quickstart
+├── PROJECT_STRUCTURE.md             # (this file)
+└── README.md                        # Project documentation
 ```
 
 ## Key Components
 
-### 1. ConnectionForm
-- Handles FileMaker Server authentication
-- Uses HTTP Basic Auth
-- Tests connection on submit
-- Displays connection status
+### 1. ConnectionForm / LoginDialog / HostSelector
+- Configure the FileMaker Server host and HTTP Basic credentials.
+- Tests connectivity on submit and surfaces SSL / CORS errors.
 
 ### 2. DatabaseBrowser
-- Lists available databases
-- Displays tables for selected database
-- Shows field metadata with FileMaker-specific annotations
-- Expandable table view with field details
+- Lists available databases.
+- Loads tables for the selected database via `$metadata`.
+- Renders field metadata with FileMaker-specific annotations
+  (FieldID, TableID, AutoGenerated, Global, Calculation, …).
 
 ### 3. WebhookManager
-- Lists all webhooks for current database
-- Create, edit, delete, and test webhooks
-- Refresh webhook list
-- Invoke webhooks manually for testing
+- Lists all webhooks for the current database.
+- Create / edit / delete / refresh / invoke (test) webhooks.
+- Renders `PendingOperationsPanel` and `WebhookDebug` inline so you can
+  see queued / failed operations at a glance.
 
 ### 4. WebhookDialog
-- Modal form for webhook creation/editing
-- Table selector with metadata loading
-- Field multi-select with checkboxes
-- OData filter input
-- Custom headers (JSON format)
-- Schema change notification toggle
+- Modal form for webhook creation and editing.
+- Table selector (driven by metadata).
+- Field multi-select with checkboxes.
+- OData filter input.
+- Custom headers (JSON).
+- Schema-change notification toggle.
+
+### 5. PendingOperationsPanel
+- Renders the `pendingOperations[]` array surfaced by `Webhook.GetAll`
+  for each webhook (ADD / UPDATE / DELETE / SCHEMA, with last error
+  code / message and send-attempt count).
 
 ## Core Services
 
-### FileMakerService (`src/services/filemaker.ts`)
+### FileMakerService — `src/services/filemaker.ts`
 
-Main API service with methods:
+Main OData client used by all UI code. Notable methods:
 
-- `setConnection(connection)` - Configure server credentials
-- `testConnection()` - Verify connection works
-- `getDatabases()` - List available databases
-- `getMetadata(database)` - Get tables and fields for database
-- `getAllWebhooks(database)` - List all webhooks
-- `createWebhook(database, params)` - Create new webhook
-- `deleteWebhook(database, webhookId)` - Remove webhook
-- `invokeWebhook(database, webhookId, rowIds?)` - Trigger webhook manually
-- `executeScript(database, scriptName, parameter?)` - Run FileMaker script
+- `setConnection(connection)` / `getConnection()` — manage credentials.
+- `testConnection()` — verify the server is reachable and the creds work.
+- `getDatabases()` — list available databases.
+- `getMetadata(database)` — load tables / fields for a database.
+- `getAllWebhooks(database)` — `GET /Webhook.GetAll`.
+- `createWebhook(database, params)` — `POST /Webhook.Add`.
+- `updateWebhook(database, id, params)` — delete + create wrapper.
+- `deleteWebhook(database, id)` — `POST /Webhook.Delete(<id>)`.
+- `invokeWebhook(database, id, tableName?)` — `POST /Webhook.Invoke(<id>)`.
+- `executeScript(database, scriptName, parameter?)` — call a FileMaker
+  script via `POST /Script.{name}`.
+
+### Endpoint validation tooling
+
+- `endpointValidator.ts` — systematic probe of `GET / POST / PUT / PATCH
+  / DELETE` against each webhook endpoint. Generates a report you can
+  print to the console.
+- `testEndpointsUtil.ts` — exposes `window.FileMakerTests.*` helpers for
+  quick browser-console testing (`quickTest`, `validateAllEndpoints`,
+  `testCreateWebhook`, `testDeleteWebhook`, `fullIntegrationTest`).
+- `documentationGenerator.ts` — self-documenting payload examples used
+  by `WebhookIdResearchPanel`.
+- `endpointTester.ts` and `webhookTestFramework.ts` — older scaffolding
+  kept in the tree for backward compatibility but **deprecated**. New
+  tests should use `endpointValidator` / `testEndpointsUtil`.
 
 ## State Management
 
@@ -98,43 +145,52 @@ Main API service with methods:
 
 Global context providing:
 
-- `connection` - Current server connection details
-- `isConnected` - Connection status
-- `currentDatabase` - Selected database
-- `currentTable` - Selected table metadata
-- `setConnection()` - Update connection
-- `disconnect()` - Clear connection and state
-- `setCurrentDatabase()` - Set active database
-- `setCurrentTable()` - Set active table
+- `connection` — current server connection details
+- `isConnected` — connection status
+- `currentDatabase` — selected database
+- `currentTable` — selected table metadata
+- `setConnection()` — update connection
+- `disconnect()` — clear connection and state
+- `setCurrentDatabase()` — set active database
+- `setCurrentTable()` — set active table
 
 ## API Integration
 
-All API calls use HTTP Basic Authentication. The service handles:
+All FileMaker API calls go through the same relative-URL path
+(`/fmi/odata/v4/...`) and are reverse-proxied to FileMaker Server by
+Vite (in dev) or nginx (in prod). The frontend never speaks to FileMaker
+Server directly.
 
-1. **Database Discovery**: `GET /fmi/odata/v4`
-2. **Metadata Retrieval**: `GET /fmi/odata/v4/{database}/$metadata`
-3. **Webhook Operations**: `POST /fmi/odata/v4/{database}/Webhook.*`
-4. **Script Execution**: `POST /fmi/odata/v4/{database}/Script.{name}`
+| Concern                | Verb / path                                     |
+|------------------------|-------------------------------------------------|
+| Database discovery     | `GET  /fmi/odata/v4`                            |
+| Metadata retrieval     | `GET  /fmi/odata/v4/{db}/$metadata`             |
+| List webhooks          | `GET  /fmi/odata/v4/{db}/Webhook.GetAll`        |
+| Get one webhook        | `GET  /fmi/odata/v4/{db}/Webhook.Get(<id>)`     |
+| Create webhook         | `POST /fmi/odata/v4/{db}/Webhook.Add`           |
+| Delete webhook         | `POST /fmi/odata/v4/{db}/Webhook.Delete(<id>)`  |
+| Invoke webhook (test)  | `POST /fmi/odata/v4/{db}/Webhook.Invoke(<id>)`  |
+| Execute script         | `POST /fmi/odata/v4/{db}/Script.{name}`         |
+
+Authentication is HTTP Basic on every request.
 
 ## Styling
 
-- **Tailwind CSS**: Utility-first CSS framework
-- **shadcn/ui**: Pre-built component library
-- **lucide-react**: Icon library
-- **Custom theme**: Slate color palette with gradient backgrounds
+- **Tailwind CSS** — utility-first CSS framework
+- **shadcn/ui** — pre-built component primitives
+- **lucide-react** — icon library
+- Custom theme based on the Slate palette with gradient backgrounds.
 
 ## Type Safety
 
-Full TypeScript support with types for:
+Full TypeScript support. Notable types in `src/types/filemaker.ts`:
 
 - `FileMakerConnection`
 - `Database`
-- `TableMetadata`
-- `FieldMetadata`
-- `Webhook`
+- `TableMetadata`, `FieldMetadata`
+- `Webhook`, `PendingOperation`
 - `WebhookCreateParams`
-- `ScriptResult`
-- `ScriptResponse`
+- `ScriptResult`, `ScriptResponse`
 
 ## Development
 
@@ -147,8 +203,9 @@ npm run lint     # Run ESLint
 
 ## Notes
 
-- No local database needed - all state lives on FileMaker Server
-- CORS may require server configuration for production use
-- Webhooks are persistent server-side entities
-- XML metadata parsing uses browser's DOMParser
-- Filter syntax follows OData v4 specification
+- No local database needed — all webhook state lives on FileMaker Server.
+- The frontend uses **relative** URLs (`/fmi/odata/v4/...`); the proxy
+  layer (Vite in dev, nginx in prod) is what reaches FileMaker Server.
+  See `vite.config.ts` and `docs/servers_enabled/fmwebhooks.conf`.
+- Webhooks are persistent server-side entities; they survive FMS
+  restarts. The app re-syncs via `Webhook.GetAll` on startup.

@@ -4,18 +4,28 @@
 
 This guide documents the proper way to test FileMaker OData webhook endpoints and clarifies which HTTP methods are supported by each endpoint.
 
-## Critical Finding: Only POST is Supported
+## Critical Finding: Reads Are GET, Actions Are POST
 
-Based on the FileMaker OData API documentation and implementation:
+Based on the official Claris OData guide and the live code in
+`src/services/filemaker.ts`, FileMaker OData webhook endpoints use the
+standard OData function-call shape: **read** endpoints use `GET`, and
+**action** endpoints use `POST` with the `<id>` passed as a function
+argument in the URL path.
 
-**All webhook operations use POST method only.**
+| Endpoint                       | HTTP method | id location |
+|--------------------------------|-------------|-------------|
+| `Webhook.GetAll`               | **GET**     | n/a         |
+| `Webhook.Get(<id>)`            | **GET**     | URL path    |
+| `Webhook.Add`                  | POST        | n/a (config in JSON body) |
+| `Webhook.Delete(<id>)`         | POST        | URL path (body may be empty) |
+| `Webhook.Invoke(<id>)`         | POST        | URL path (body has `rowIDs`) |
 
-- ❌ GET is NOT supported for webhook operations
-- ❌ PUT is NOT supported
-- ❌ PATCH is NOT supported
-- ❌ DELETE is NOT supported
+- ❌ `PUT` and `PATCH` are not supported on any webhook endpoint.
+- ❌ REST-style `DELETE /Webhook/<id>` is also not supported — use
+  `POST /Webhook.Delete(<id>)` instead.
 
-Only POST is used for all webhook operations.
+Reference:
+https://help.claris.com/en/odata-guide/content/webhook-options.html
 
 ## Documented Webhook Endpoints
 
@@ -23,13 +33,10 @@ Only POST is used for all webhook operations.
 **Purpose:** List all webhooks in the database
 
 ```
-POST /fmi/odata/v4/{database}/Webhook.GetAll
+GET /fmi/odata/v4/{database}/Webhook.GetAll
 ```
 
-**Request Body:**
-```json
-{}
-```
+**Request body:** none (it's a `GET`).
 
 **Response:**
 ```json
@@ -81,15 +88,13 @@ POST /fmi/odata/v4/{database}/Webhook.Add
 **Purpose:** Get a specific webhook by ID
 
 ```
-POST /fmi/odata/v4/{database}/Webhook.Get
+GET /fmi/odata/v4/{database}/Webhook.Get(<id>)
 ```
 
-**Request Body:**
-```json
-{
-  "webhookID": 1
-}
-```
+The `<id>` is the OData function argument and goes in the URL path —
+for example: `GET /fmi/odata/v4/Contacts/Webhook.Get(1)`.
+
+**Request body:** none.
 
 **Response:**
 ```json
@@ -109,15 +114,11 @@ POST /fmi/odata/v4/{database}/Webhook.Get
 **Purpose:** Delete a webhook by ID
 
 ```
-POST /fmi/odata/v4/{database}/Webhook.Delete
+POST /fmi/odata/v4/{database}/Webhook.Delete(<id>)
 ```
 
-**Request Body:**
-```json
-{
-  "webhookID": 1
-}
-```
+The `<id>` goes in the URL path. The request body may be empty (or
+`{}`). For example: `POST /fmi/odata/v4/Contacts/Webhook.Delete(1)`.
 
 **Response:**
 ```json
@@ -132,13 +133,15 @@ POST /fmi/odata/v4/{database}/Webhook.Delete
 **Purpose:** Manually trigger a webhook for testing
 
 ```
-POST /fmi/odata/v4/{database}/Webhook.Invoke
+POST /fmi/odata/v4/{database}/Webhook.Invoke(<id>)
 ```
+
+The `<id>` goes in the URL path. The body carries the `rowIDs` to fire
+for:
 
 **Request Body:**
 ```json
 {
-  "webhookID": 1,
   "rowIDs": [1, 2, 3]
 }
 ```
@@ -156,23 +159,21 @@ POST /fmi/odata/v4/{database}/Webhook.Invoke
 
 The following endpoints/patterns do NOT exist in FileMaker OData:
 
-- ❌ `GET /Webhook.GetAll` - Must use POST
-- ❌ `GET /Webhook/{id}` - No direct GET by ID endpoint
-- ❌ `PUT /Webhook/{id}` - No native update endpoint
-- ❌ `PATCH /Webhook/{id}` - No native patch endpoint
-- ❌ `DELETE /Webhook/{id}` - No native DELETE method
-- ❌ `Webhook.Update(id)` - Does not exist
-- ❌ `Webhook.Edit(id)` - Does not exist
-- ❌ `Webhook.Patch(id)` - Does not exist
-- ❌ `Webhook.Put(id)` - Does not exist
-- ❌ `Webhook(id)` - Not a valid endpoint pattern
+- ❌ `PUT /Webhook/<id>`    — no native update endpoint
+- ❌ `PATCH /Webhook/<id>`  — no native patch endpoint
+- ❌ `DELETE /Webhook/<id>` — no REST-style verb; use `POST /Webhook.Delete(<id>)`
+- ❌ `Webhook.Update(<id>)`, `Webhook.Edit(<id>)`, `Webhook.Patch(<id>)`,
+  `Webhook.Put(<id>)` — none of these are exposed by the OData service
+- ❌ `Webhook(<id>)` as a single-resource entity URL
 
 ## How to Update a Webhook
 
 Since FileMaker OData does not support PUT/PATCH operations, updating a webhook requires:
 
-1. **Delete** the old webhook using `Webhook.Delete`
-2. **Create** a new webhook using `Webhook.Add`
+1. **Delete** the old webhook using `POST /Webhook.Delete(<id>)`
+   (the id goes in the URL path).
+2. **Create** a new webhook using `POST /Webhook.Add` with the updated
+   config in the JSON body.
 
 **Important:** The new webhook will receive a new ID. Any external systems referencing the old ID will need to be updated.
 

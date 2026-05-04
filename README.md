@@ -169,16 +169,26 @@ This application uses a **hybrid connection architecture**:
 - SSL certificate bypassing via proxy configuration
 - URLs: `/fmi/odata/v4` → `https://192.168.0.24/fmi/odata/v4`
 
-### Production Mode  
-- **Frontend** (Static files) → **FileMaker Server** (direct OData API calls)
-- Requires SSL certificate acceptance in browser
-- Direct HTTPS calls to FileMaker's OData API
-- URLs: `https://your-server/fmi/odata/v4`
+### Production Mode
+- **Frontend** (Static files) → **nginx** (`/fmi/*` reverse-proxy) → **FileMaker Server**
+- nginx terminates TLS for the public site and proxies `/fmi/*` to
+  FileMaker Server (`proxy_ssl_verify off` to accept FMS's self-signed
+  cert). Direct browser → FileMaker Server isn't viable because FMS
+  doesn't emit CORS headers.
+- The frontend always issues **relative** URLs like
+  `/fmi/odata/v4/<db>/Webhook.GetAll`, so dev and prod use the same
+  client code — only the proxy changes.
+- An example nginx site config lives in
+  [`docs/servers_enabled/fmwebhooks.conf`](docs/servers_enabled/fmwebhooks.conf)
+  and a standalone reverse-proxy snippet lives in
+  [`nginx-reverse-proxy.conf`](nginx-reverse-proxy.conf).
 
 This approach provides:
-- ✅ Easy development with automatic CORS handling
-- ✅ Simple production deployment without backend dependencies
-- ✅ SSL certificate flexibility (proxy in dev, manual acceptance in prod)
+- ✅ Easy development with automatic CORS handling (Vite proxy)
+- ✅ Same-origin production deployment (no CORS needed once nginx
+  proxies `/fmi/*`)
+- ✅ SSL certificate flexibility (proxy bypass in dev, nginx upstream
+  TLS in prod)
 
 ## Deployment Options
 
@@ -189,30 +199,46 @@ This approach provides:
 
 ### Production
 - Build: `npm run build`
-- Deploy `dist/` folder to any web server (nginx, Apache, etc.)
-- Example nginx setup: symlink `dist/` to `/var/www/html/fmwebhooks`
+- Deploy `dist/` folder to a web server that **also** reverse-proxies
+  `/fmi/*` to your FileMaker Server. The frontend uses relative URLs
+  (`/fmi/odata/v4/...`), so without the proxy nothing will reach
+  FileMaker.
+- Example nginx setup: symlink `dist/` to `/var/www/html/fmwebhooks` and
+  use the site config in
+  [`docs/servers_enabled/fmwebhooks.conf`](docs/servers_enabled/fmwebhooks.conf)
+  (which contains the `/fmi/` proxy block) or the standalone snippet in
+  [`nginx-reverse-proxy.conf`](nginx-reverse-proxy.conf).
 - Access at `http://your-server/fmwebhooks`
 
 ## Verified Findings
 
 ### HTTP Methods
-✅ **Only POST is supported** for all webhook operations (verified through systematic testing)
-- `POST /Webhook.GetAll` - List webhooks
-- `POST /Webhook.Add` - Create webhook
-- `POST /Webhook.Get` - Get specific webhook
-- `POST /Webhook.Delete` - Delete webhook
-- `POST /Webhook.Invoke` - Test/trigger webhook
+✅ **Read endpoints use GET, action endpoints use POST**, per the
+official Claris OData guide
+([webhook-options.html](https://help.claris.com/en/odata-guide/content/webhook-options.html)).
 
-❌ GET, PUT, PATCH, DELETE methods are NOT supported
+| Endpoint                       | HTTP method | id location                       |
+|--------------------------------|-------------|-----------------------------------|
+| `Webhook.GetAll`               | **GET**     | n/a                               |
+| `Webhook.Get(<id>)`            | **GET**     | URL path                          |
+| `Webhook.Add`                  | POST        | n/a (config in JSON body)         |
+| `Webhook.Delete(<id>)`         | POST        | URL path (body may be empty)      |
+| `Webhook.Invoke(<id>)`         | POST        | URL path (body has `rowIDs`)      |
+
+❌ PUT and PATCH are not supported on any webhook endpoint.
+❌ REST-style `DELETE /Webhook/<id>` is also not supported — use
+`POST /Webhook.Delete(<id>)` instead.
 
 ### Webhook Persistence
 ✅ **Webhooks persist across server restarts** - Confirmed through testing with `Webhook.GetAll`
 
 ### Webhook Updates
-⚠️ **No native update operation** - Use delete + create pattern:
-1. Delete old webhook with `POST /Webhook.Delete`
-2. Create new webhook with `POST /Webhook.Add`
-3. Update external references (new webhook gets new ID)
+⚠️ **No native update operation** — use the delete + create pattern:
+1. Delete the old webhook with `POST /Webhook.Delete(<id>)` (the id is
+   passed as an OData function argument in the URL path).
+2. Create the new webhook with `POST /Webhook.Add`.
+3. Update external references — the new webhook will have a different
+   ID.
 
 ### Webhook IDs
 - Sequentially generated integers (1, 2, 3, etc.)
