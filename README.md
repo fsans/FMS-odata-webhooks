@@ -2,8 +2,7 @@
 
 [![Version](https://img.shields.io/badge/version-1.0.6-blue.svg)](https://github.com/fsans/FMS-odata-webhooks/releases)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
-[![Author](https://img.shields.io/badge/Author-Francesc_Sans-informational.svg)](https://github.com/fsans)
-[![nBCN Software](https://img.shields.io/badge/nBCN_Software-Barcelona-lightgrey.svg)](https://github.com/fsans)
+[![nBCN Software](https://img.shields.io/badge/nBCN_Software-Barcelona-lightgrey.svg)](https://ntwk.es)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.6-3178c6.svg?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
 [![React](https://img.shields.io/badge/React-18-61dafb.svg?logo=react&logoColor=white)](https://react.dev/)
 [![Vite](https://img.shields.io/badge/Vite-6-646cff.svg?logo=vite&logoColor=white)](https://vitejs.dev/)
