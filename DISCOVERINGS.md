@@ -47,13 +47,29 @@ issues `POST /Webhook.Invoke(<id>)` with `{ rowIDs }`.
 
 ### Webhook ID Behavior
 
-**Status: VERIFIED - IDs are sequentially generated and unique**
+**Status: VERIFIED — IDs are server-generated integers and ARE recycled**
 
-- Webhook IDs are sequentially generated integers (1, 2, 3, etc.)
-- IDs are unique per webhook
-- IDs cannot be set manually
-- When updating a webhook (delete + create), the new webhook receives a new ID
-- Old IDs are not reused
+- Webhook IDs are integers issued by FileMaker Server (typically
+  allocated in ascending order: 1, 2, 3, …).
+- IDs are unique among **active** webhooks.
+- IDs cannot be set manually.
+- When updating a webhook (delete + create), the new webhook receives
+  a fresh ID from the server.
+- ⚠️ **IDs ARE reused after deletion.** Earlier versions of this
+  document said "Old IDs are not reused" — that was wrong. Internally
+  FileMaker Server recycles webhook IDs:
+  - There is a (non-trivial) **delay** after a webhook is deleted
+    before its ID becomes a candidate for reuse — so a back-to-back
+    delete + create in the same session usually gets a fresh number,
+    which is what fooled us originally.
+  - But over a longer time window (and especially across server
+    restarts / GC cycles) the previously-used numeric ID can be
+    handed back out to a brand-new webhook.
+- **Implication for callers:** never treat a webhook ID as a
+  permanent, globally-unique external identifier. If you need stable
+  references in another system, store your own UUID (e.g. encoded in
+  the webhook URL or in `headers`) and reconcile against
+  `Webhook.GetAll` rather than trusting the numeric ID alone.
 
 ### How to Update Webhooks
 

@@ -1,6 +1,6 @@
 # FileMaker OData Webhooks Manager
 
-[![Version](https://img.shields.io/badge/version-1.0.7-blue.svg)](https://github.com/fsans/FMS-odata-webhooks/releases)
+[![Version](https://img.shields.io/badge/version-1.0.8-blue.svg)](https://github.com/fsans/FMS-odata-webhooks/releases)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![nBCN Software](https://img.shields.io/badge/nBCN_Software-Barcelona-lightgrey.svg)](https://ntwk.es)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.6-3178c6.svg?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
@@ -48,9 +48,6 @@ This application provides a user-friendly interface to browse FileMaker database
 # Clone the repository
 git clone https://github.com/fsans/FMS-odata-webhooks.git
 cd FMS-odata-webhooks
-
-# Initialize submodule (private docs — requires access)
-git submodule update --init
 
 # Install dependencies
 npm install
@@ -136,21 +133,49 @@ await window.FileMakerTests.fullIntegrationTest('DatabaseName', 'TableName')
 
 See [QUICK_START_TESTING.md](QUICK_START_TESTING.md) for detailed testing instructions.
 
-## ⚠️ Important: Reserved Field Names in OData Queries
+## ⚠️ Important: `id` is a Reserved Word in OData
 
-**The `id` field is a reserved word in FileMaker OData and MUST be quoted in `$select` parameters.**
+**The token `id` is reserved by the OData URL conventions and cannot be
+referenced bare in `$select` / `$filter` / `$orderby`.** This is
+standard, well-documented OData behavior — it is not a discovery, and
+it is not specific to FileMaker. We document it here because it shows
+up constantly when designing webhooks against FileMaker tables that
+happen to have a field named `id`.
 
-When querying records and selecting the `id` field, always use:
-```
-$select="id"
-```
+### Symptoms
 
-NOT:
-```
-$select=id
-```
+- `$select=id` (alone) → syntax error / property not found
+- `$select=Name,id` → fails or silently drops the `id` field
+- `$filter=id eq 123` → may fail even when the field exists
+- `"select": "first_name,last_name,id"` inside a webhook descriptor
+  → the webhook is created but the server returns
+  `Error: syntax error in URL at: 'id'` and the webhook stays stuck
+  in `NOT_SENT`
 
-This is a FileMaker-specific requirement. Failure to quote reserved field names will result in OData parsing errors.
+### Workarounds (keep these tricks handy)
+
+1. **Best long-term solution — rename the field.** Avoid lowercase
+   `id` entirely. Use `ID`, `RecordID`, `record_id`, `<table>_id`,
+   `uuid`, etc.
+2. **Quote the identifier.** FileMaker OData accepts quoted
+   identifiers for the `id` field in many places:
+   ```
+   $select=Name,"id"
+   $filter="id" eq 942
+   ```
+3. **Qualify it with a TO / table prefix:**
+   ```
+   $select=MyTO/"id"
+   ```
+
+The app already quotes `id` where it needs to be selected (see
+`src/services/filemaker.ts` — e.g. `$select="id"&$top=5` when sampling
+rowIDs). Treat any code path that interpolates a user-provided field
+name directly into `$select` / `$filter` as needing this guard.
+
+See [DISCOVERINGS.md](DISCOVERINGS.md#warning-id-is-a-reserved-odata-word)
+for the long version (with the failing webhook payloads we hit in
+testing).
 
 ## Architecture
 
@@ -171,10 +196,10 @@ This application uses a **hybrid connection architecture**:
 - The frontend always issues **relative** URLs like
   `/fmi/odata/v4/<db>/Webhook.GetAll`, so dev and prod use the same
   client code — only the proxy changes.
-- An example nginx site config lives in
-  [`docs/servers_enabled/fmwebhooks.conf`](docs/servers_enabled/fmwebhooks.conf)
-  and a standalone reverse-proxy snippet lives in
-  [`nginx-reverse-proxy.conf`](nginx-reverse-proxy.conf).
+- A standalone reverse-proxy snippet lives in
+  [`nginx-reverse-proxy.conf`](nginx-reverse-proxy.conf), and a drop-in
+  snippet for an existing nginx site lives in
+  [`nginx-integration-snippet.conf`](nginx-integration-snippet.conf).
 
 This approach provides:
 - ✅ Easy development with automatic CORS handling (Vite proxy)
@@ -197,10 +222,11 @@ This approach provides:
   (`/fmi/odata/v4/...`), so without the proxy nothing will reach
   FileMaker.
 - Example nginx setup: symlink `dist/` to `/var/www/html/fmwebhooks` and
-  use the site config in
-  [`docs/servers_enabled/fmwebhooks.conf`](docs/servers_enabled/fmwebhooks.conf)
-  (which contains the `/fmi/` proxy block) or the standalone snippet in
-  [`nginx-reverse-proxy.conf`](nginx-reverse-proxy.conf).
+  use the standalone reverse-proxy snippet in
+  [`nginx-reverse-proxy.conf`](nginx-reverse-proxy.conf), or drop the
+  `/fmi/` proxy block from
+  [`nginx-integration-snippet.conf`](nginx-integration-snippet.conf)
+  into your existing site config.
 - Access at `http://your-server/fmwebhooks`
 
 ## Verified Findings
@@ -234,10 +260,17 @@ official Claris OData guide
    ID.
 
 ### Webhook IDs
-- Sequentially generated integers (1, 2, 3, etc.)
-- Unique per webhook
+- Generated by FileMaker Server as integers (typically allocated in
+  ascending order: 1, 2, 3, …)
+- Unique among **active** webhooks
 - Cannot be set manually
-- Not reused after deletion
+- ⚠️ **Are recycled by the server.** IDs of deleted webhooks are
+  eventually reused — there is a delay after deletion before the same
+  numeric ID can come back, but it does come back. Do **not** treat a
+  webhook ID as a globally unique, immutable handle for external
+  systems; always reconcile against the current `Webhook.GetAll`
+  output. See [DISCOVERINGS.md](DISCOVERINGS.md#webhook-id-behavior)
+  for the full notes.
 
 See [DISCOVERINGS.md](DISCOVERINGS.md) for complete verified findings.
 
@@ -254,7 +287,7 @@ MIT License — see [LICENSE](LICENSE) for details.
 
 ## Author
 
-Created and maintained by **Francesc Sans** — [nBCN Software](https://nbcn.software), Barcelona.
+Created and maintained by **Francesc Sans** — [nBCN Software](https://ntwk.es), Barcelona.
 
 Feel free to open issues or pull requests.
 
