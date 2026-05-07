@@ -173,7 +173,7 @@ The app already quotes `id` where it needs to be selected (see
 rowIDs). Treat any code path that interpolates a user-provided field
 name directly into `$select` / `$filter` as needing this guard.
 
-See [DISCOVERINGS.md](DISCOVERINGS.md#warning-id-is-a-reserved-odata-word)
+See [DISCOVERINGS.md](DISCOVERINGS.md#known-odata-fact-id-is-a-reserved-word)
 for the long version (with the failing webhook payloads we hit in
 testing).
 
