@@ -1,6 +1,6 @@
 # FileMaker OData Webhooks Manager
 
-[![Version](https://img.shields.io/badge/version-1.0.7-blue.svg)](https://github.com/fsans/FMS-odata-webhooks/releases)
+[![Version](https://img.shields.io/badge/version-1.0.8-blue.svg)](https://github.com/fsans/FMS-odata-webhooks/releases)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![nBCN Software](https://img.shields.io/badge/nBCN_Software-Barcelona-lightgrey.svg)](https://ntwk.es)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.6-3178c6.svg?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
