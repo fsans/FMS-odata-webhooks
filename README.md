@@ -289,7 +289,7 @@ MIT License — see [LICENSE](LICENSE) for details.
 
 ## Author
 
-Created and maintained by **Francesc Sans** — [nBCN Software](https://nbcn.software), Barcelona.
+Created and maintained by **Francesc Sans** — [nBCN Software](https://ntwk.es), Barcelona.
 
 Feel free to open issues or pull requests.
 
