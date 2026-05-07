@@ -49,9 +49,6 @@ This application provides a user-friendly interface to browse FileMaker database
 git clone https://github.com/fsans/FMS-odata-webhooks.git
 cd FMS-odata-webhooks
 
-# Initialize submodule (private docs — requires access)
-git submodule update --init
-
 # Install dependencies
 npm install
 
@@ -199,10 +196,10 @@ This application uses a **hybrid connection architecture**:
 - The frontend always issues **relative** URLs like
   `/fmi/odata/v4/<db>/Webhook.GetAll`, so dev and prod use the same
   client code — only the proxy changes.
-- An example nginx site config lives in
-  [`docs/servers_enabled/fmwebhooks.conf`](docs/servers_enabled/fmwebhooks.conf)
-  and a standalone reverse-proxy snippet lives in
-  [`nginx-reverse-proxy.conf`](nginx-reverse-proxy.conf).
+- A standalone reverse-proxy snippet lives in
+  [`nginx-reverse-proxy.conf`](nginx-reverse-proxy.conf), and a drop-in
+  snippet for an existing nginx site lives in
+  [`nginx-integration-snippet.conf`](nginx-integration-snippet.conf).
 
 This approach provides:
 - ✅ Easy development with automatic CORS handling (Vite proxy)
@@ -225,10 +222,11 @@ This approach provides:
   (`/fmi/odata/v4/...`), so without the proxy nothing will reach
   FileMaker.
 - Example nginx setup: symlink `dist/` to `/var/www/html/fmwebhooks` and
-  use the site config in
-  [`docs/servers_enabled/fmwebhooks.conf`](docs/servers_enabled/fmwebhooks.conf)
-  (which contains the `/fmi/` proxy block) or the standalone snippet in
-  [`nginx-reverse-proxy.conf`](nginx-reverse-proxy.conf).
+  use the standalone reverse-proxy snippet in
+  [`nginx-reverse-proxy.conf`](nginx-reverse-proxy.conf), or drop the
+  `/fmi/` proxy block from
+  [`nginx-integration-snippet.conf`](nginx-integration-snippet.conf)
+  into your existing site config.
 - Access at `http://your-server/fmwebhooks`
 
 ## Verified Findings

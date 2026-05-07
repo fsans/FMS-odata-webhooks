@@ -58,7 +58,6 @@ FMS-odata-webhooks/
 │   ├── index.css                    # Tailwind directives + global CSS
 │   ├── main.tsx                     # App entry point
 │   └── vite-env.d.ts                # Vite type definitions
-├── docs/                            # Private docs submodule (see docs/README.md)
 ├── index.html                       # HTML template
 ├── package.json                     # Dependencies and scripts
 ├── tsconfig.json / tsconfig.app.json / tsconfig.node.json
@@ -206,6 +205,6 @@ npm run lint     # Run ESLint
 - No local database needed — all webhook state lives on FileMaker Server.
 - The frontend uses **relative** URLs (`/fmi/odata/v4/...`); the proxy
   layer (Vite in dev, nginx in prod) is what reaches FileMaker Server.
-  See `vite.config.ts` and `docs/servers_enabled/fmwebhooks.conf`.
+  See `vite.config.ts` and `nginx-reverse-proxy.conf`.
 - Webhooks are persistent server-side entities; they survive FMS
   restarts. The app re-syncs via `Webhook.GetAll` on startup.
