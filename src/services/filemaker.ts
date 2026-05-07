@@ -256,9 +256,12 @@ class FileMakerService {
 
   async updateWebhook(database: string, webhookId: string, params: WebhookCreateParams): Promise<{ webhook: Webhook; oldId: string }> {
     // FileMaker OData only supports: Add, Delete, Get, GetAll, Invoke
-    // No native update operation exists, so we must delete and recreate
-    // NOTE: This changes the webhook ID - FileMaker generates new sequential IDs
-    // This means any external system referencing the old ID will break
+    // No native update operation exists, so we must delete and recreate.
+    // NOTE: This changes the webhook ID. FileMaker assigns a fresh
+    // server-generated integer (typically allocated in ascending order,
+    // but the server *does* recycle IDs of deleted webhooks after a
+    // delay — see DISCOVERINGS.md), so any external system referencing
+    // the old ID will break.
     const oldId = webhookId
     const startTime = Date.now()
     
