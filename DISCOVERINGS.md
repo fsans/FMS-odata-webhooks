@@ -70,19 +70,17 @@ updating requires the delete+create pattern:
 
 This is implemented in `fileMakerService.updateWebhook()` which handles the delete+create pattern automatically.
 
-## Warning to reserved words
+## Known OData fact: `id` is a reserved word
 
-The word id (lowercase) is a reserved word in FileMaker ODATA (maybe in generaal ODATA ?). This represents a big issue for the API design.
+The word `id` (lowercase) is a reserved word in OData — this is a standard OData behavior, not a FileMaker-specific glitch, and not a bug.
 
-This is a known (and quite annoying) behavior in FileMaker's OData implementation.
+OData implementations (including FileMaker's) automatically map the internal record primary key to a property called `id` in the payload. When a user-defined field is also named `id`, a naming collision occurs.
 
-FileMaker's OData engine internally reserves / treats "id" (lowercase) as a special/keyword-like name — even though the official documentation never explicitly lists it as a reserved word.
+Why this happens:
 
-This happens because:
-
- - Many OData implementations (especially those based on .NET / ASP.NET Web API) automatically expect or inject an "ID" / "Id" property as the primary key of an entity
- - FileMaker maps its internal record ID (the one you see with Get(RecordID)) to a property called "id" in the OData payload (lowercase!)
- - When you have your own field also called "id", it creates a naming collision → the parser gets confused and usually refuses the $select (or sometimes $filter, $orderby…) when you try to reference "id"
+ - Many OData implementations automatically expect or inject an `ID` / `Id` property as the entity primary key
+ - FileMaker maps its internal record ID (the one from `Get(RecordID)`) to a property called `id` in the OData payload (lowercase)
+ - When a user field is also called `id`, the parser gets confused and usually refuses `$select` (sometimes also `$filter`, `$orderby`) when referencing `id`
   
 
 Typical symptoms
@@ -92,22 +90,19 @@ Typical symptoms
  - $filter=id eq 123 → may fail even when the field exists
  - But $select=Name, Id, somethingElse usually works fine (if you have a field called "Id")
 
-Workarounds (choose one)
- 
-1 Best long-term solution
-  - Rename your field to anything else: ID, RecordID, uuid, my_id, contact_id, etc.
- → "ID" (uppercase) almost never collides in FileMaker OData.
+Recommended options (choose one)
 
-2 Quick fix – quote the field name
-  - In many cases FileMaker OData accepts quoted identifiers:
-  - ```text$select=Name, "id"```
-  - or
-  - ```text$filter="id" eq 942```
-   → Try this first — - it solves the problem for a lot of people.
-  
-3 Use the TableOccurrence prefix trick (if you're in a TO context)
-  
-  ```text$select=MyTO/"id"```
+1. **Preferred — rename to uppercase**
+   - Rename your field to `ID`, `RecordID`, `uuid`, `contact_id`, etc.
+   - `ID` (uppercase) almost never collides in FileMaker OData.
+
+2. **Quote the field name**
+   - FileMaker OData accepts quoted identifiers in most cases:
+   - `$select=Name,"id"`
+   - `$filter="id" eq 942`
+
+3. **Table Occurrence prefix trick** (when inside a TO context)
+   - `$select=MyTO/"id"`
 
 Summary – what usually works best
 
