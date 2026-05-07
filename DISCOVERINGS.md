@@ -47,13 +47,29 @@ issues `POST /Webhook.Invoke(<id>)` with `{ rowIDs }`.
 
 ### Webhook ID Behavior
 
-**Status: VERIFIED - IDs are sequentially generated and unique**
+**Status: VERIFIED — IDs are server-generated integers and ARE recycled**
 
-- Webhook IDs are sequentially generated integers (1, 2, 3, etc.)
-- IDs are unique per webhook
-- IDs cannot be set manually
-- When updating a webhook (delete + create), the new webhook receives a new ID
-- Old IDs are not reused
+- Webhook IDs are integers issued by FileMaker Server (typically
+  allocated in ascending order: 1, 2, 3, …).
+- IDs are unique among **active** webhooks.
+- IDs cannot be set manually.
+- When updating a webhook (delete + create), the new webhook receives
+  a fresh ID from the server.
+- ⚠️ **IDs ARE reused after deletion.** Earlier versions of this
+  document said "Old IDs are not reused" — that was wrong. Internally
+  FileMaker Server recycles webhook IDs:
+  - There is a (non-trivial) **delay** after a webhook is deleted
+    before its ID becomes a candidate for reuse — so a back-to-back
+    delete + create in the same session usually gets a fresh number,
+    which is what fooled us originally.
+  - But over a longer time window (and especially across server
+    restarts / GC cycles) the previously-used numeric ID can be
+    handed back out to a brand-new webhook.
+- **Implication for callers:** never treat a webhook ID as a
+  permanent, globally-unique external identifier. If you need stable
+  references in another system, store your own UUID (e.g. encoded in
+  the webhook URL or in `headers`) and reconcile against
+  `Webhook.GetAll` rather than trusting the numeric ID alone.
 
 ### How to Update Webhooks
 
@@ -70,54 +86,79 @@ updating requires the delete+create pattern:
 
 This is implemented in `fileMakerService.updateWebhook()` which handles the delete+create pattern automatically.
 
-## Warning to reserved words
+## Warning: `id` is a Reserved OData Word
 
-The word id (lowercase) is a reserved word in FileMaker ODATA (maybe in generaal ODATA ?). This represents a big issue for the API design.
+> **This is NOT a discovery.** `id` is reserved by the OData URL
+> conventions (the OData spec uses it as the system token in
+> `@odata.id`, in entity references like `MySet(id)`, etc.). The fact
+> that you cannot use a bare lowercase `id` as a regular property
+> name in `$select` / `$filter` / `$orderby` is well-documented
+> upstream behavior, not a FileMaker quirk we uncovered.
+>
+> We keep the section here only because it bites webhooks hard
+> (silent failures, stuck `pendingOperations`, no useful error in the
+> UI) and because the workarounds below are the ones we rely on in
+> this codebase. Treat this as a **known-issue cookbook**, not a
+> finding.
 
-This is a known (and quite annoying) behavior in FileMaker's OData implementation.
+### What's actually going on
 
-FileMaker's OData engine internally reserves / treats "id" (lowercase) as a special/keyword-like name — even though the official documentation never explicitly lists it as a reserved word.
+ - The OData v4 URL conventions reserve `id` as a system identifier
+   token, so OData parsers (FileMaker's included) refuse to bind a
+   bare `id` in query options to a regular property.
+ - FileMaker also surfaces the internal record id as the lowercase
+   `id` key in OData payloads, which makes the collision more
+   visible if you happen to have a FileMaker field named `id`.
+ - Net effect: when a webhook's `select` (or a record query's
+   `$select` / `$filter`) references a bare `id`, FileMaker
+   responds with `Error: syntax error in URL at: 'id'` and the
+   pending operation gets stuck in `NOT_SENT`.
 
-This happens because:
+### Typical symptoms
 
- - Many OData implementations (especially those based on .NET / ASP.NET Web API) automatically expect or inject an "ID" / "Id" property as the primary key of an entity
- - FileMaker maps its internal record ID (the one you see with Get(RecordID)) to a property called "id" in the OData payload (lowercase!)
- - When you have your own field also called "id", it creates a naming collision → the parser gets confused and usually refuses the $select (or sometimes $filter, $orderby…) when you try to reference "id"
-  
+ - `$select=Name, id` → fails or silently ignores the `id` field
+ - `$select=id` alone → syntax error / "property not found"
+ - `$filter=id eq 123` → may fail even when the field exists
+ - `$select=Name, Id, somethingElse` is usually fine (if you have a
+   field called `Id` with that capitalization)
 
-Typical symptoms
+### Workarounds (the tricks we keep using — do not delete)
 
- - $select=Name, id → fails or silently ignores your "id" field
- - $select=id alone → often gives a syntax error or "property not found"
- - $filter=id eq 123 → may fail even when the field exists
- - But $select=Name, Id, somethingElse usually works fine (if you have a field called "Id")
+1. **Best long-term solution — rename the field.**
+   Avoid lowercase `id`. Prefer `ID`, `RecordID`, `<table>_id`,
+   `uuid`, etc. Uppercase `ID` almost never collides.
+2. **Quote the identifier.** FileMaker OData accepts quoted
+   identifiers in many places:
+   ```
+   $select=Name,"id"
+   $filter="id" eq 942
+   ```
+   This is the workaround the app uses internally — see
+   `invokeWebhook` in `src/services/filemaker.ts`, which builds
+   `$select="id"&$top=5` when sampling rowIDs.
+3. **Qualify it with a TO / table prefix:**
+   ```
+   $select=MyTO/"id"
+   ```
 
-Workarounds (choose one)
- 
-1 Best long-term solution
-  - Rename your field to anything else: ID, RecordID, uuid, my_id, contact_id, etc.
- → "ID" (uppercase) almost never collides in FileMaker OData.
+### Quick reference
 
-2 Quick fix – quote the field name
-  - In many cases FileMaker OData accepts quoted identifiers:
-  - ```text$select=Name, "id"```
-  - or
-  - ```text$filter="id" eq 942```
-   → Try this first — - it solves the problem for a lot of people.
-  
-3 Use the TableOccurrence prefix trick (if you're in a TO context)
-  
-  ```text$select=MyTO/"id"```
+| Your field name | `$select=` syntax that usually works | Recommendation        |
+|-----------------|--------------------------------------|-----------------------|
+| `id`            | `"id"` or `MyTable/"id"`             | Quote it (or rename)  |
+| `ID`            | `ID`                                 | Preferred             |
+| `record_id`     | `record_id`                          | Safe                  |
+| `Id`            | `Id`                                 | Usually safe          |
 
-Summary – what usually works best
+### What this means for webhook config
 
-
-| Your field name | $select=… syntax that usually works | Recommendation |
-|-----------------|-------------------------------------|----------------|
-| id              | "id" or MyTable/"id"                | Quote it       |
-| ID              | ID                                  | Preferred      |
-| record_id       | record_id                           | Safe           |
-| Id              | Id                                  | Usually safe   |
+When building a `Webhook.Add` body, the `select` property is just a
+bare comma-separated field list, **but** at notification time
+FileMaker turns it into a real OData query against the table — so the
+same `id` reservation applies. If a user picks a field literally
+named `id`, the webhook will keep firing and keep failing with
+`syntax error in URL at: 'id'`. Quote it (`"id"`) or rename the
+FileMaker field.
 
 
 
