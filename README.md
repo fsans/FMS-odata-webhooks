@@ -31,6 +31,8 @@ This application provides a user-friendly interface to browse FileMaker database
 - [DISCOVERINGS.md](DISCOVERINGS.md) - **Verified findings about FileMaker OData webhooks**
 - [ENDPOINT_TESTING_GUIDE.md](ENDPOINT_TESTING_GUIDE.md) - **Complete endpoint testing documentation**
 - [QUICK_START_TESTING.md](QUICK_START_TESTING.md) - **Quick reference for testing endpoints**
+- [ROADMAP.md](ROADMAP.md) - **Planned features and strategies**
+- [PLAN_FILEMAKER_DIRECT_CALL.md](PLAN_FILEMAKER_DIRECT_CALL.md) - **FileMaker Direct Call webhooks — implementation plan**
 
 
 ## Tech Stack
